@@ -59,6 +59,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("Aiming", IE_Pressed, this, &APlayerCharacter::Aiming);
 
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &APlayerCharacter::StartJump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacter::StopJump);
+
 }
 
 void APlayerCharacter::SpawnWeapon()
@@ -95,5 +98,15 @@ void APlayerCharacter::MoveRight(float Axis)
 	if(Axis == 0.f) return;
 	
 	AddMovementInput(GetActorRightVector(), Axis);
+}
+
+void APlayerCharacter::StartJump()
+{
+	Jump();
+}
+
+void APlayerCharacter::StopJump()
+{
+	StopJumping();
 }
 

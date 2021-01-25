@@ -60,4 +60,7 @@ private:
 	void MoveForward(float Axis);
 	void MoveRight(float Axis);
 
+	void StartJump();
+	void StopJump();
+
 };
