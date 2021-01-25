@@ -124,9 +124,14 @@ void APlayerCharacter::StopJump()
 }
 
 void APlayerCharacter::StartSprint()
-{
+{	
 	if(!HasAuthority())
 	{
+		if(GetCharacterMovement()->IsCrouching())
+		{
+			UnCrouch();
+		}
+		
 		ServerStartSprint();
 	}
 	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
