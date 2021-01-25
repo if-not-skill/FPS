@@ -41,6 +41,12 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Settings")
 	float VerticalSensitivity;
+
+	UPROPERTY(EditDefaultsOnly, Category="CharacterSettings")
+	float WalkSpeed;
+	
+	UPROPERTY(EditDefaultsOnly, Category="CharacterSettings")
+	float SprintSpeed;
 	
 public:
 	APlayerCharacter();
@@ -62,5 +68,16 @@ private:
 
 	void StartJump();
 	void StopJump();
+
+	void StartSprint();
+	void StopSprint();
+
+	UFUNCTION(Server, Reliable)
+	void ServerStartSprint();
+	
+	UFUNCTION(Server, Reliable)
+    void ServerStopSprint();
+
+	void StartCrouch();
 
 };

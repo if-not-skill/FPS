@@ -5,6 +5,7 @@
 
 #include "Camera/CameraComponent.h"
 #include "FPS/Weapons/BaseWeapon.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -13,6 +14,9 @@ APlayerCharacter::APlayerCharacter()
 
 	VerticalSensitivity = 1.f;
 	HorizontalSensitivity = 1.f;
+
+	WalkSpeed = 150.f;
+	SprintSpeed = 660.f;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(GetMesh(), FName("CameraSocket"));
@@ -37,6 +41,9 @@ APlayerCharacter::APlayerCharacter()
 	EquipmentMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Equipment");
 	EquipmentMesh->SetupAttachment(GetMesh());
 	EquipmentMesh->SetMasterPoseComponent(GetMesh());
+
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -44,6 +51,7 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	SpawnWeapon();
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	
 }
 
@@ -61,6 +69,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &APlayerCharacter::StartJump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacter::StopJump);
+	
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerCharacter::StartSprint);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerCharacter::StopSprint);
+
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerCharacter::StartCrouch);
 
 }
 
@@ -110,3 +123,42 @@ void APlayerCharacter::StopJump()
 	StopJumping();
 }
 
+void APlayerCharacter::StartSprint()
+{
+	if(!HasAuthority())
+	{
+		ServerStartSprint();
+	}
+	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+}
+
+void APlayerCharacter::StopSprint()
+{
+	if(!HasAuthority())
+	{
+		ServerStopSprint();
+	}
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
+void APlayerCharacter::StartCrouch()
+{
+	if(GetCharacterMovement()->IsCrouching())
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();
+	}
+}
+
+void APlayerCharacter::ServerStopSprint_Implementation()
+{
+	StopSprint();
+}
+
+void APlayerCharacter::ServerStartSprint_Implementation()
+{
+	StartSprint();
+}
