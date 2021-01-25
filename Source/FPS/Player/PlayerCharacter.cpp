@@ -4,13 +4,15 @@
 #include "PlayerCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "Engine/DemoNetDriver.h"
 #include "FPS/Weapons/BaseWeapon.h"
 #include "GameFramework/CharacterMovementComponent.h"
+
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	VerticalSensitivity = 1.f;
 	HorizontalSensitivity = 1.f;
@@ -55,6 +57,13 @@ void APlayerCharacter::BeginPlay()
 	
 }
 
+void APlayerCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	ServerSetControlRotationRep();
+}
+
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -77,6 +86,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 }
 
+void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APlayerCharacter, ControlRotationRep);
+}
+
 void APlayerCharacter::SpawnWeapon()
 {	
 	FActorSpawnParameters SpawnParameters;
@@ -87,12 +103,16 @@ void APlayerCharacter::SpawnWeapon()
 
 void APlayerCharacter::LookUp(float Axis)
 {
-	AddControllerPitchInput(Axis * VerticalSensitivity * GetWorld()->GetDeltaSeconds());
+	if(Axis != 0.f){
+		AddControllerPitchInput(Axis * VerticalSensitivity * GetWorld()->GetDeltaSeconds());
+	}
 }
 
 void APlayerCharacter::Turn(float Axis)
 {
-	AddControllerYawInput(Axis * HorizontalSensitivity * GetWorld()->GetDeltaSeconds());
+	if(Axis != 0.f){
+		AddControllerYawInput(Axis * HorizontalSensitivity * GetWorld()->GetDeltaSeconds());
+	}
 }
 
 void APlayerCharacter::Aiming()
@@ -155,6 +175,14 @@ void APlayerCharacter::StartCrouch()
 	else
 	{
 		Crouch();
+	}
+}
+
+void APlayerCharacter::ServerSetControlRotationRep_Implementation()
+{
+	if(IsLocallyControlled() || HasAuthority())
+	{
+		ControlRotationRep = GetControlRotation();
 	}
 }
 

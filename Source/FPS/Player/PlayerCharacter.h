@@ -42,6 +42,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Settings")
 	float VerticalSensitivity;
 
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	FRotator ControlRotationRep;
+
+private:
 	UPROPERTY(EditDefaultsOnly, Category="CharacterSettings")
 	float WalkSpeed;
 	
@@ -53,7 +57,9 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	void SpawnWeapon();
@@ -79,5 +85,8 @@ private:
     void ServerStopSprint();
 
 	void StartCrouch();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetControlRotationRep();
 
 };
