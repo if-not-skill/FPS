@@ -12,9 +12,6 @@ ABaseWeapon::ABaseWeapon()
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	RootComponent = WeaponMesh;
 
-	WeaponCamera = CreateDefaultSubobject<UCameraComponent>("Camera");
-	WeaponCamera->SetupAttachment(WeaponMesh, FName("WCameraSocket"));
-
 }
 
 void ABaseWeapon::BeginPlay()

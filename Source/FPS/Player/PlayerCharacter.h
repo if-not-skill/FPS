@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
@@ -12,7 +13,7 @@ class FPS_API APlayerCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly, Category="Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	class UCameraComponent* Camera;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Components")
@@ -47,6 +48,27 @@ public:
 
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	bool bIsSprinting;
+	
+	UPROPERTY(Replicated, BlueprintReadWrite)
+	bool bIsAiming;
+
+	UPROPERTY(BlueprintReadWrite)
+	float MoveForwardValue;
+	
+	UPROPERTY(BlueprintReadWrite)
+	float MoveRightValue;
+	
+	UPROPERTY(BlueprintReadWrite)
+	float TurnValue;
+	
+	UPROPERTY(BlueprintReadWrite)
+	float LookValue;
+
+	UPROPERTY(EditDefaultsOnly, Category="CameraShake")
+	TSubclassOf<UCameraShakeBase> CameraShakeWalk;
+	
+	UPROPERTY(EditDefaultsOnly, Category="CameraShake")
+	TSubclassOf<UCameraShakeBase> CameraShakeSprint;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="CharacterSettings")
@@ -57,6 +79,9 @@ private:
 	
 public:
 	APlayerCharacter();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void ToggleADS();
 
 protected:
 	virtual void BeginPlay() override;
@@ -69,8 +94,6 @@ private:
 
 	void LookUp(float Axis);
 	void Turn(float Axis);
-
-	void Aiming();
 
 	void MoveForward(float Axis);
 	void MoveRight(float Axis);
@@ -86,10 +109,21 @@ private:
 	
 	UFUNCTION(Server, Reliable)
     void ServerStopSprint();
+	
+	void StartAiming();
+	void StopAiming();
+	
+	UFUNCTION(Server, Reliable)
+    void ServerStartAiming();
+	
+	UFUNCTION(Server, Reliable)
+    void ServerStopAiming();
 
 	void StartCrouch();
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetControlRotationRep();
+
+	void HandleCameraShake();
 
 };

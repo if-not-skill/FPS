@@ -7,6 +7,7 @@
 #include "Engine/DemoNetDriver.h"
 #include "FPS/Weapons/BaseWeapon.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -74,7 +75,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
 
-	PlayerInputComponent->BindAction("Aiming", IE_Pressed, this, &APlayerCharacter::Aiming);
+	PlayerInputComponent->BindAction("Aiming", IE_Pressed, this, &APlayerCharacter::StartAiming);
+	PlayerInputComponent->BindAction("Aiming", IE_Released, this, &APlayerCharacter::StopAiming);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &APlayerCharacter::StartJump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacter::StopJump);
@@ -92,6 +94,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(APlayerCharacter, ControlRotationRep);
 	DOREPLIFETIME(APlayerCharacter, bIsSprinting);
+	DOREPLIFETIME(APlayerCharacter, bIsAiming);
 }
 
 void APlayerCharacter::SpawnWeapon()
@@ -104,34 +107,38 @@ void APlayerCharacter::SpawnWeapon()
 
 void APlayerCharacter::LookUp(float Axis)
 {
-	if(Axis != 0.f){
-		AddControllerPitchInput(Axis * VerticalSensitivity * GetWorld()->GetDeltaSeconds());
-	}
+	LookValue = Axis * VerticalSensitivity * GetWorld()->GetDeltaSeconds();
+	
+	AddControllerPitchInput(LookValue);
 }
 
 void APlayerCharacter::Turn(float Axis)
 {
-	if(Axis != 0.f){
-		AddControllerYawInput(Axis * HorizontalSensitivity * GetWorld()->GetDeltaSeconds());
-	}
-}
-
-void APlayerCharacter::Aiming()
-{
+	TurnValue = Axis * HorizontalSensitivity * GetWorld()->GetDeltaSeconds();
+	
+	AddControllerYawInput(TurnValue);
 }
 
 void APlayerCharacter::MoveForward(float Axis)
 {
-	if(Axis == 0.f) return;
+	MoveForwardValue = Axis;
 	
-	AddMovementInput(GetActorForwardVector(), Axis);
+	if(MoveForwardValue != 0.f)
+	{
+		AddMovementInput(GetActorForwardVector(), Axis);
+		HandleCameraShake();
+	}
 }
 
 void APlayerCharacter::MoveRight(float Axis)
 {
-	if(Axis == 0.f) return;
+	MoveRightValue = Axis;
 	
-	AddMovementInput(GetActorRightVector(), Axis);
+	if(MoveRightValue != 0.f)
+	{
+		AddMovementInput(GetActorRightVector(), Axis);
+		HandleCameraShake();
+	}
 }
 
 void APlayerCharacter::StartJump()
@@ -171,6 +178,36 @@ void APlayerCharacter::StopSprint()
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
+void APlayerCharacter::StartAiming()
+{
+	if(!HasAuthority())
+	{
+		ServerStartAiming();
+	}
+	
+	ToggleADS();
+}
+
+void APlayerCharacter::StopAiming()
+{
+	if(!HasAuthority())
+	{
+		ServerStopAiming();
+	}
+
+	ToggleADS();
+}
+
+void APlayerCharacter::ServerStartAiming_Implementation()
+{
+	bIsAiming = true;
+}
+
+void APlayerCharacter::ServerStopAiming_Implementation()
+{
+	bIsAiming = false;
+}
+
 void APlayerCharacter::StartCrouch()
 {
 	if(GetCharacterMovement()->IsCrouching())
@@ -180,6 +217,19 @@ void APlayerCharacter::StartCrouch()
 	else
 	{
 		Crouch();
+	}
+}
+
+void APlayerCharacter::HandleCameraShake()
+{
+	if(bIsSprinting)
+	{
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientPlayCameraShake(CameraShakeSprint);	
+	}
+	else
+	{
+		
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientPlayCameraShake(CameraShakeWalk);
 	}
 }
 

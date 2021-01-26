@@ -17,9 +17,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
 	class USkeletalMeshComponent* WeaponMesh;
 
-	UPROPERTY(EditDefaultsOnly, Category="Components")
-	class UCameraComponent* WeaponCamera;
-
 protected:
 	virtual void BeginPlay() override;
 
