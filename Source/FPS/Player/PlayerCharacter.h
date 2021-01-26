@@ -126,4 +126,6 @@ private:
 
 	void HandleCameraShake();
 
+	void CheckSprintDirection();
+
 };

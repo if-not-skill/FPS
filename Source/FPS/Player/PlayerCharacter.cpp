@@ -63,6 +63,7 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	ServerSetControlRotationRep();
+	CheckSprintDirection();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -152,7 +153,9 @@ void APlayerCharacter::StopJump()
 }
 
 void APlayerCharacter::StartSprint()
-{	
+{
+	if(MoveForwardValue < 0.f) return;
+	
 	if(!HasAuthority())
 	{
 		if(GetCharacterMovement()->IsCrouching())
@@ -224,12 +227,21 @@ void APlayerCharacter::HandleCameraShake()
 {
 	if(bIsSprinting)
 	{
-		UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientPlayCameraShake(CameraShakeSprint);	
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientStartCameraShake(CameraShakeSprint);	
 	}
 	else
 	{
-		
-		UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientPlayCameraShake(CameraShakeWalk);
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientStartCameraShake(CameraShakeWalk);
+	}
+}
+
+void APlayerCharacter::CheckSprintDirection()
+{
+	if(!bIsSprinting) return;
+
+	if(MoveForwardValue < 0.f)
+	{
+		StopSprint();
 	}
 }
 
