@@ -99,7 +99,7 @@ void APlayerCharacter::SpawnWeapon()
 	FActorSpawnParameters SpawnParameters;
 	
 	CurrentWeapon = GetWorld()->SpawnActor<ABaseWeapon>(CurrentWeaponClass, FTransform(), SpawnParameters);
-	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("LeftHandSocket"));
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("RightHandSocket"));
 }
 
 void APlayerCharacter::LookUp(float Axis)

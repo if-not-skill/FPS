@@ -14,7 +14,7 @@ class FPS_API ABaseWeapon : public AActor
 public:	
 	ABaseWeapon();
 
-	UPROPERTY(EditDefaultsOnly, Category="Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
 	class USkeletalMeshComponent* WeaponMesh;
 
 	UPROPERTY(EditDefaultsOnly, Category="Components")
