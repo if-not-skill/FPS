@@ -91,6 +91,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(APlayerCharacter, ControlRotationRep);
+	DOREPLIFETIME(APlayerCharacter, bIsSprinting);
 }
 
 void APlayerCharacter::SpawnWeapon()
@@ -154,6 +155,8 @@ void APlayerCharacter::StartSprint()
 		
 		ServerStartSprint();
 	}
+
+	bIsSprinting = true;
 	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 }
 
@@ -163,6 +166,8 @@ void APlayerCharacter::StopSprint()
 	{
 		ServerStopSprint();
 	}
+
+	bIsSprinting = false;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 

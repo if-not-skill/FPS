@@ -45,6 +45,9 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	FRotator ControlRotationRep;
 
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	bool bIsSprinting;
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category="CharacterSettings")
 	float WalkSpeed;
