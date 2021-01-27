@@ -4,6 +4,7 @@
 #include "BaseWeapon.h"
 
 #include "Camera/CameraComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ABaseWeapon::ABaseWeapon()
 {

@@ -31,7 +31,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Components")
 	class USkeletalMeshComponent* EquipmentMesh;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Replicated)
 	class ABaseWeapon* CurrentWeapon;
 
 	UPROPERTY(EditDefaultsOnly, Category="Spawning")
@@ -76,6 +76,7 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category="CharacterSettings")
 	float SprintSpeed;
+
 	
 public:
 	APlayerCharacter();
@@ -128,4 +129,14 @@ private:
 
 	void CheckSprintDirection();
 
+	void Fire();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSpawnProjectile(FVector SpawnLocation, FRotator SpawnRotator, AActor* SpawnOwner, APawn* SpawnInstigator);
+
+	UFUNCTION(Server, Unreliable)
+    void ServerSpawnFireEffects();
+	
+	UFUNCTION(NetMulticast, Unreliable)
+    void MulticastSpawnFireEffects();
 };

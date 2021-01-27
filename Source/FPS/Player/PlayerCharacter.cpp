@@ -3,9 +3,12 @@
 
 #include "PlayerCharacter.h"
 
+
+#include "DrawDebugHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/DemoNetDriver.h"
 #include "FPS/Weapons/BaseWeapon.h"
+#include "FPS/Weapons/ProjectileMaster.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -49,6 +52,8 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
 
+
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -62,7 +67,11 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	ServerSetControlRotationRep();
+	if(IsLocallyControlled())
+	{
+		ServerSetControlRotationRep();
+	}
+	
 	CheckSprintDirection();
 }
 
@@ -86,6 +95,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerCharacter::StopSprint);
 
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerCharacter::StartCrouch);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::Fire);
 
 }
 
@@ -96,6 +106,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, ControlRotationRep);
 	DOREPLIFETIME(APlayerCharacter, bIsSprinting);
 	DOREPLIFETIME(APlayerCharacter, bIsAiming);
+	DOREPLIFETIME(APlayerCharacter, CurrentWeapon);
 }
 
 void APlayerCharacter::SpawnWeapon()
@@ -103,7 +114,13 @@ void APlayerCharacter::SpawnWeapon()
 	FActorSpawnParameters SpawnParameters;
 	
 	CurrentWeapon = GetWorld()->SpawnActor<ABaseWeapon>(CurrentWeaponClass, FTransform(), SpawnParameters);
-	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("RightHandSocket"));
+	CurrentWeapon->AttachToComponent
+	(
+		GetMesh(),
+		FAttachmentTransformRules::KeepRelativeTransform,
+		FName("RightHandSocket")
+	);
+	CurrentWeapon->SetOwner(this);
 }
 
 void APlayerCharacter::LookUp(float Axis)
@@ -244,6 +261,55 @@ void APlayerCharacter::CheckSprintDirection()
 		StopSprint();
 	}
 }
+
+void APlayerCharacter::Fire()
+{
+	if(CurrentWeapon)
+	{
+		FVector SpawnLocation = CurrentWeapon->WeaponMesh->GetSocketLocation("Muzzle");
+		FRotator SpawnRotation = CurrentWeapon->WeaponMesh->GetSocketRotation("Muzzle");
+		ServerSpawnProjectile(SpawnLocation, SpawnRotation, CurrentWeapon, this);
+		ServerSpawnFireEffects();
+	}
+}
+
+void APlayerCharacter::ServerSpawnFireEffects_Implementation()
+{
+	MulticastSpawnFireEffects();
+}
+
+void APlayerCharacter::MulticastSpawnFireEffects_Implementation()
+{
+	UGameplayStatics::SpawnEmitterAttached(
+        CurrentWeapon->WeaponData.ParticleMuzzleFlash,
+        CurrentWeapon->WeaponMesh,
+        FName("Muzzle"),
+        FVector::ZeroVector,
+        FRotator::ZeroRotator,
+        EAttachLocation::SnapToTarget,
+        true);
+	
+	UGameplayStatics::SpawnEmitterAttached(
+        CurrentWeapon->WeaponData.ParticleShellEject,
+        CurrentWeapon->WeaponMesh,
+        FName("ShellEjection"),
+        FVector::ZeroVector,
+        FRotator::ZeroRotator,
+        EAttachLocation::SnapToTarget,
+        true);
+}
+
+void APlayerCharacter::ServerSpawnProjectile_Implementation(FVector SpawnLocation, FRotator SpawnRotator, AActor* SpawnOwner, APawn* SpawnInstigator)
+{
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParameters.Owner = SpawnOwner;
+	SpawnParameters.Instigator = SpawnInstigator;
+
+	GetWorld()->SpawnActor<AProjectileMaster>(CurrentWeapon->WeaponData.ProjectileClass, SpawnLocation, SpawnRotator, SpawnParameters);
+	
+}
+
 
 void APlayerCharacter::ServerSetControlRotationRep_Implementation()
 {
