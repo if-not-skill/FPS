@@ -77,6 +77,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="CharacterSettings")
 	float SprintSpeed;
 
+	FTimerHandle TimerHandle_Fire;
 	
 public:
 	APlayerCharacter();
@@ -129,6 +130,9 @@ private:
 
 	void CheckSprintDirection();
 
+	void PressedFire();
+	void ReleasedFire();
+	
 	void Fire();
 
 	UFUNCTION(Server, Reliable)

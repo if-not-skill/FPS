@@ -95,7 +95,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerCharacter::StopSprint);
 
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerCharacter::StartCrouch);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::Fire);
+	
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PressedFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ReleasedFire);
 
 }
 
@@ -259,6 +261,45 @@ void APlayerCharacter::CheckSprintDirection()
 	if(MoveForwardValue < 0.f)
 	{
 		StopSprint();
+	}
+}
+
+void APlayerCharacter::PressedFire()
+{
+	switch (CurrentWeapon->WeaponData.FireMode)
+	{
+		case EFireMode::FM_Auto:
+			{
+				Fire();
+				if(!GetWorld()->GetTimerManager().IsTimerActive(TimerHandle_Fire))
+				{
+					GetWorld()->GetTimerManager().SetTimer(
+						TimerHandle_Fire,
+						this,
+						&APlayerCharacter::Fire,
+						CurrentWeapon->WeaponData.FireRate, 
+						true);
+				}
+			}
+			break;
+		case EFireMode::FM_Burst:
+			{
+				
+			}
+			break;
+		case EFireMode::FM_Single:
+			{
+				Fire();
+			}
+			break;
+	}
+}
+
+void APlayerCharacter::ReleasedFire()
+{
+	if(GetWorld()->GetTimerManager().IsTimerActive(TimerHandle_Fire))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Fire);
 	}
 }
 
