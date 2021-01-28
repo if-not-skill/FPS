@@ -23,7 +23,7 @@ public:
 	UStaticMeshComponent* ProjectileMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UParticleSystemComponent* ProjectileParticle;
+	UParticleSystemComponent* ProjectileParticle;	
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float GravityDelay;
