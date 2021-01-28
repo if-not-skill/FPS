@@ -62,6 +62,12 @@ struct FWeaponData : public FTableRowBase
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	int AmmoCurrent;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FVector2D VerticalRecoil;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FVector2D HorizontalRecoil;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UAnimMontage* FiringMontage;

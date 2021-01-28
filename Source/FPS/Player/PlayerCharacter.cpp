@@ -310,8 +310,23 @@ void APlayerCharacter::Fire()
 	{
 		FVector SpawnLocation = CurrentWeapon->WeaponMesh->GetSocketLocation("Muzzle");
 		FRotator SpawnRotation = CurrentWeapon->WeaponMesh->GetSocketRotation("Muzzle");
+		
 		ServerPlayFireAnim();
 		ServerSpawnProjectile(SpawnLocation, SpawnRotation, CurrentWeapon, this);
+		
+		const float VerticalRecoil = 
+			FMath::RandRange(
+				CurrentWeapon->WeaponData.VerticalRecoil.X,
+				CurrentWeapon->WeaponData.VerticalRecoil.Y
+				) * -1.f;
+
+		const float HorizontalRecoil =
+			FMath::RandRange(
+				CurrentWeapon->WeaponData.HorizontalRecoil.X, 
+				CurrentWeapon->WeaponData.HorizontalRecoil.Y);
+
+		LookUp(VerticalRecoil);
+		Turn(HorizontalRecoil);	
 	}
 }
 

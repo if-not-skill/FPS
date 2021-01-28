@@ -24,9 +24,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UParticleSystemComponent* ProjectileParticle;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float ProjectileSpeed;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float GravityDelay;

@@ -13,7 +13,6 @@ AProjectileMaster::AProjectileMaster()
 {
 	bReplicates = true;
 
-	ProjectileSpeed = 40000.f;
 	GravityDelay = 0.1f;
 	GravityScale = 3.5f;
 
@@ -25,7 +24,7 @@ AProjectileMaster::AProjectileMaster()
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(FName("ProjectileMovement"));
 	ProjectileMovement->UpdatedComponent = ProjectileCollision;
-	ProjectileMovement->InitialSpeed = ProjectileSpeed;
+	ProjectileMovement->InitialSpeed = 40000.f;
 	ProjectileMovement->bShouldBounce = false;
 	ProjectileMovement->ProjectileGravityScale = 0.f;
 
@@ -53,9 +52,6 @@ void AProjectileMaster::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* Ot
 void AProjectileMaster::BeginPlay()
 {
 	Super::BeginPlay();
-
-	ProjectileMovement->InitialSpeed = ProjectileSpeed;
-	ProjectileMovement->ProjectileGravityScale = 0.f;
 
 	FTimerHandle DummyHandle;
 	GetWorldTimerManager().SetTimer(DummyHandle, this, &AProjectileMaster::ApplyGravity, GravityDelay);
