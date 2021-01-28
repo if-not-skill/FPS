@@ -139,8 +139,8 @@ private:
 	void ServerSpawnProjectile(FVector SpawnLocation, FRotator SpawnRotator, AActor* SpawnOwner, APawn* SpawnInstigator);
 
 	UFUNCTION(Server, Unreliable)
-    void ServerSpawnFireEffects();
+    void ServerPlayFireAnim();
 	
 	UFUNCTION(NetMulticast, Unreliable)
-    void MulticastSpawnFireEffects();
+    void MulticastPlayFireAnim();
 };

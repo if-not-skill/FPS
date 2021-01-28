@@ -11,6 +11,7 @@
 #include "FPS/Weapons/ProjectileMaster.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Animation/AnimInstance.h"
 
 
 // Sets default values
@@ -309,35 +310,26 @@ void APlayerCharacter::Fire()
 	{
 		FVector SpawnLocation = CurrentWeapon->WeaponMesh->GetSocketLocation("Muzzle");
 		FRotator SpawnRotation = CurrentWeapon->WeaponMesh->GetSocketRotation("Muzzle");
+		ServerPlayFireAnim();
 		ServerSpawnProjectile(SpawnLocation, SpawnRotation, CurrentWeapon, this);
-		ServerSpawnFireEffects();
 	}
 }
 
-void APlayerCharacter::ServerSpawnFireEffects_Implementation()
+void APlayerCharacter::MulticastPlayFireAnim_Implementation()
 {
-	MulticastSpawnFireEffects();
+	if(CurrentWeapon)
+	{
+		UAnimInstance* AnimInstance = CurrentWeapon->WeaponMesh->GetAnimInstance();
+		if(AnimInstance)
+		{
+			AnimInstance->Montage_Play(CurrentWeapon->WeaponData.FiringMontage);
+		}
+	}
 }
 
-void APlayerCharacter::MulticastSpawnFireEffects_Implementation()
+void APlayerCharacter::ServerPlayFireAnim_Implementation()
 {
-	UGameplayStatics::SpawnEmitterAttached(
-        CurrentWeapon->WeaponData.ParticleMuzzleFlash,
-        CurrentWeapon->WeaponMesh,
-        FName("Muzzle"),
-        FVector::ZeroVector,
-        FRotator::ZeroRotator,
-        EAttachLocation::SnapToTarget,
-        true);
-	
-	UGameplayStatics::SpawnEmitterAttached(
-        CurrentWeapon->WeaponData.ParticleShellEject,
-        CurrentWeapon->WeaponMesh,
-        FName("ShellEjection"),
-        FVector::ZeroVector,
-        FRotator::ZeroRotator,
-        EAttachLocation::SnapToTarget,
-        true);
+	MulticastPlayFireAnim();
 }
 
 void APlayerCharacter::ServerSpawnProjectile_Implementation(FVector SpawnLocation, FRotator SpawnRotator, AActor* SpawnOwner, APawn* SpawnInstigator)

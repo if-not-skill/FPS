@@ -68,12 +68,6 @@ struct FWeaponData : public FTableRowBase
 	UAnimMontage* ReloadMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UParticleSystem* ParticleMuzzleFlash;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UParticleSystem* ParticleShellEject;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSubclassOf<class AProjectileMaster> ProjectileClass;
 
 };
