@@ -39,6 +39,8 @@ struct FWeaponData : public FTableRowBase
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float FireRate;
+	
+	float FireDelay;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float ReloadDelay;
@@ -63,6 +65,9 @@ struct FWeaponData : public FTableRowBase
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UAnimMontage* FiringMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UAnimMontage* CharFireMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UAnimMontage* ReloadMontage;

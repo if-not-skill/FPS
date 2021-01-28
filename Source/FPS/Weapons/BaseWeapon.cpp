@@ -18,5 +18,6 @@ ABaseWeapon::ABaseWeapon()
 void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	WeaponData.FireDelay = 60.f / WeaponData.FireRate;
 }

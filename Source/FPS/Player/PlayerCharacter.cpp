@@ -278,7 +278,7 @@ void APlayerCharacter::PressedFire()
 						TimerHandle_Fire,
 						this,
 						&APlayerCharacter::Fire,
-						CurrentWeapon->WeaponData.FireRate, 
+						CurrentWeapon->WeaponData.FireDelay, 
 						true);
 				}
 			}
@@ -316,9 +316,14 @@ void APlayerCharacter::Fire()
 }
 
 void APlayerCharacter::MulticastPlayFireAnim_Implementation()
-{
+{	
 	if(CurrentWeapon)
 	{
+		UAnimInstance* CharAnimInstance = GetMesh()->GetAnimInstance();
+		UAnimMontage* CharAnimMontage = CurrentWeapon->WeaponData.CharFireMontage;
+
+		CharAnimInstance->Montage_Play(CharAnimMontage);
+		
 		UAnimInstance* AnimInstance = CurrentWeapon->WeaponMesh->GetAnimInstance();
 		if(AnimInstance)
 		{
