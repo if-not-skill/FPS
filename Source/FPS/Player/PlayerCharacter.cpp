@@ -8,7 +8,6 @@
 #include "Camera/CameraComponent.h"
 #include "Engine/DemoNetDriver.h"
 #include "FPS/Weapons/BaseWeapon.h"
-#include "FPS/Weapons/ProjectileMaster.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimInstance.h"
@@ -53,15 +52,12 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
 
-
-
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SpawnWeapon();
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -116,6 +112,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 void APlayerCharacter::SpawnWeapon()
 {	
 	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = this;
 	
 	CurrentWeapon = GetWorld()->SpawnActor<ABaseWeapon>(CurrentWeaponClass, FTransform(), SpawnParameters);
 	CurrentWeapon->AttachToComponent
@@ -124,7 +121,6 @@ void APlayerCharacter::SpawnWeapon()
 		FAttachmentTransformRules::KeepRelativeTransform,
 		FName("RightHandSocket")
 	);
-	CurrentWeapon->SetOwner(this);
 }
 
 void APlayerCharacter::LookUp(float Axis)
@@ -179,10 +175,8 @@ void APlayerCharacter::StartSprint()
 	
 	if(!HasAuthority())
 	{
-		if(GetCharacterMovement()->IsCrouching())
-		{
-			UnCrouch();
-		}
+		if(GetCharacterMovement()->IsCrouching()) UnCrouch();
+		if(bIsAiming) StopAiming();
 		
 		ServerStartSprint();
 	}
@@ -204,20 +198,16 @@ void APlayerCharacter::StopSprint()
 
 void APlayerCharacter::StartAiming()
 {
-	if(!HasAuthority())
-	{
-		ServerStartAiming();
-	}
+	if(bIsSprinting) StopSprint();
+		
+	ServerStartAiming();
 	
 	ToggleADS();
 }
 
 void APlayerCharacter::StopAiming()
 {
-	if(!HasAuthority())
-	{
-		ServerStopAiming();
-	}
+	ServerStopAiming();
 
 	ToggleADS();
 }
@@ -309,84 +299,44 @@ void APlayerCharacter::Fire()
 {
 	if(CurrentWeapon)
 	{
-		FVector SpawnLocation = CurrentWeapon->WeaponMesh->GetSocketLocation("Muzzle");
-		FRotator SpawnRotation = CurrentWeapon->WeaponMesh->GetSocketRotation("Muzzle");
-		
-		ServerPlayFireAnim();
-		ServerSpawnProjectile(SpawnLocation, SpawnRotation, CurrentWeapon, this);
-		
-		const float VerticalRecoil = 
-			FMath::RandRange(
-				CurrentWeapon->WeaponData.VerticalRecoil.X,
-				CurrentWeapon->WeaponData.VerticalRecoil.Y
-				) * -1.f;
-
-		const float HorizontalRecoil =
-			FMath::RandRange(
-				CurrentWeapon->WeaponData.HorizontalRecoil.X, 
-				CurrentWeapon->WeaponData.HorizontalRecoil.Y);
-
-		LookUp(VerticalRecoil);
-		Turn(HorizontalRecoil);	
+		if(CurrentWeapon->CurrentAmmo > 0)
+		{
+			CurrentWeapon->Fire();
+			GiveRecoil();
+		}
+		else
+		{
+			if(bIsAiming)
+			{
+				StopAiming();
+			}
+			
+			Reload();
+		}
 	}
 }
 
 void APlayerCharacter::Reload()
 {
-	ServerReload();
+	CurrentWeapon->Reload();
 }
 
-void APlayerCharacter::MulticastReload_Implementation()
+void APlayerCharacter::GiveRecoil()
 {
-	UAnimInstance* CharAnimInstance = GetMesh()->GetAnimInstance();
-	UAnimMontage* CharAnimMontage = CurrentWeapon->WeaponData.CharReloadMontage;
+	const float VerticalRecoil = 
+        FMath::RandRange(
+            CurrentWeapon->WeaponData.VerticalRecoil.X,
+            CurrentWeapon->WeaponData.VerticalRecoil.Y
+            ) * -1.f;
 
-	CharAnimInstance->Montage_Play(CharAnimMontage);
-	UAnimInstance* AnimInstance = CurrentWeapon->WeaponMesh->GetAnimInstance();
-	if(AnimInstance)
-	{
-		AnimInstance->Montage_Play(CurrentWeapon->WeaponData.ReloadMontage);
-	}
+	const float HorizontalRecoil =
+        FMath::RandRange(
+            CurrentWeapon->WeaponData.HorizontalRecoil.X, 
+            CurrentWeapon->WeaponData.HorizontalRecoil.Y);
+
+	LookUp(VerticalRecoil);
+	Turn(HorizontalRecoil);	
 }
-
-void APlayerCharacter::ServerReload_Implementation()
-{
-	MulticastReload();
-}
-
-void APlayerCharacter::MulticastPlayFireAnim_Implementation()
-{	
-	if(CurrentWeapon)
-	{
-		UAnimInstance* CharAnimInstance = GetMesh()->GetAnimInstance();
-		UAnimMontage* CharAnimMontage = CurrentWeapon->WeaponData.CharFireMontage;
-
-		CharAnimInstance->Montage_Play(CharAnimMontage);
-		
-		UAnimInstance* AnimInstance = CurrentWeapon->WeaponMesh->GetAnimInstance();
-		if(AnimInstance)
-		{
-			AnimInstance->Montage_Play(CurrentWeapon->WeaponData.FiringMontage);
-		}
-	}
-}
-
-void APlayerCharacter::ServerPlayFireAnim_Implementation()
-{
-	MulticastPlayFireAnim();
-}
-
-void APlayerCharacter::ServerSpawnProjectile_Implementation(FVector SpawnLocation, FRotator SpawnRotator, AActor* SpawnOwner, APawn* SpawnInstigator)
-{
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParameters.Owner = SpawnOwner;
-	SpawnParameters.Instigator = SpawnInstigator;
-
-	GetWorld()->SpawnActor<AProjectileMaster>(CurrentWeapon->WeaponData.ProjectileClass, SpawnLocation, SpawnRotator, SpawnParameters);
-	
-}
-
 
 void APlayerCharacter::ServerSetControlRotationRep_Implementation()
 {

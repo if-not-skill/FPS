@@ -134,22 +134,7 @@ private:
 	void ReleasedFire();
 	
 	void Fire();
-
-	UFUNCTION(Server, Reliable)
-	void ServerSpawnProjectile(FVector SpawnLocation, FRotator SpawnRotator, AActor* SpawnOwner, APawn* SpawnInstigator);
-
-	UFUNCTION(Server, Unreliable)
-    void ServerPlayFireAnim();
-	
-	UFUNCTION(NetMulticast, Unreliable)
-    void MulticastPlayFireAnim();
-
 	void Reload();
-
-	UFUNCTION(Server, Reliable)
-	void ServerReload();
-	
-	UFUNCTION(NetMulticast, Reliable)
-    void MulticastReload();
+	void GiveRecoil();
 	
 };

@@ -61,9 +61,6 @@ struct FWeaponData : public FTableRowBase
 	int AmmoInMagazine;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	int AmmoCurrent;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	FVector2D VerticalRecoil;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -101,6 +98,9 @@ class FPS_API ABaseWeapon : public AActor
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	FName WeaponRowName;
+
+	UPROPERTY(Replicated, BlueprintReadWrite)
+	uint8 CurrentAmmo;
 	
 	UPROPERTY(BlueprintReadWrite)
 	FWeaponData WeaponData;
@@ -111,7 +111,32 @@ public:
 public:	
 	ABaseWeapon();
 
+	void Fire();
+	void Reload();
+
 protected:
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+private:
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
+	
+	UFUNCTION(NetMulticast, Reliable)
+    void MulticastReload();
+
+	UFUNCTION(Server, Reliable)
+    void ServerSpawnProjectile(FVector SpawnLocation, FRotator SpawnRotator, AActor* SpawnOwner, APawn* SpawnInstigator);
+
+	UFUNCTION(Server, Unreliable)
+    void ServerPlayFireAnim();
+	
+	UFUNCTION(NetMulticast, Unreliable)
+    void MulticastPlayFireAnim();
+
+	ACharacter* GetCharacterOwner() const;
+	UAnimInstance* GetCharacterAnimInstance() const;
+
+	UFUNCTION(Server, Reliable)
+	void ServerEndReload();
 };
