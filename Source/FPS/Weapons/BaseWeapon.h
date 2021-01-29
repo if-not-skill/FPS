@@ -77,7 +77,16 @@ struct FWeaponData : public FTableRowBase
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UAnimMontage* ReloadMontage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UAnimMontage* ReloadEmptyMontage;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UAnimMontage* CharReloadMontage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UAnimMontage* CharReloadEmptyMontage;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSubclassOf<class AProjectileMaster> ProjectileClass;
 

@@ -143,4 +143,13 @@ private:
 	
 	UFUNCTION(NetMulticast, Unreliable)
     void MulticastPlayFireAnim();
+
+	void Reload();
+
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
+	
+	UFUNCTION(NetMulticast, Reliable)
+    void MulticastReload();
+	
 };

@@ -99,7 +99,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::PressedFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ReleasedFire);
-
+	
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APlayerCharacter::Reload);
 }
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -328,6 +329,29 @@ void APlayerCharacter::Fire()
 		LookUp(VerticalRecoil);
 		Turn(HorizontalRecoil);	
 	}
+}
+
+void APlayerCharacter::Reload()
+{
+	ServerReload();
+}
+
+void APlayerCharacter::MulticastReload_Implementation()
+{
+	UAnimInstance* CharAnimInstance = GetMesh()->GetAnimInstance();
+	UAnimMontage* CharAnimMontage = CurrentWeapon->WeaponData.CharReloadMontage;
+
+	CharAnimInstance->Montage_Play(CharAnimMontage);
+	UAnimInstance* AnimInstance = CurrentWeapon->WeaponMesh->GetAnimInstance();
+	if(AnimInstance)
+	{
+		AnimInstance->Montage_Play(CurrentWeapon->WeaponData.ReloadMontage);
+	}
+}
+
+void APlayerCharacter::ServerReload_Implementation()
+{
+	MulticastReload();
 }
 
 void APlayerCharacter::MulticastPlayFireAnim_Implementation()
