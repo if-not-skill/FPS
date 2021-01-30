@@ -4,6 +4,7 @@
 #include "HealthComponent.h"
 
 #include "Engine/DemoNetDriver.h"
+#include "FPS/Player/PlayerCharacter.h"
 
 UHealthComponent::UHealthComponent()
 {
@@ -37,7 +38,14 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 	}
 
 	CurrentHealthPoints = FMath::Clamp(CurrentHealthPoints - Damage, 0.f, MaxHealthPoints);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("CurrentHealthPoint: %f"), CurrentHealthPoints));
+
+	if(CurrentHealthPoints == 0.f)
+	{
+		if(APlayerCharacter* Char = Cast<APlayerCharacter>(GetOwner()))
+		{
+			Char->Die();
+		}
+	}
 }
 
 

@@ -11,6 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimInstance.h"
+#include "Components/CapsuleComponent.h"
 #include "FPS/Components/HealthComponent.h"
 
 
@@ -54,6 +55,23 @@ APlayerCharacter::APlayerCharacter()
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
+}
+
+void APlayerCharacter::Die()
+{
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		MultiDie();
+	}
+}
+
+void APlayerCharacter::MultiDie_Implementation()
+{
+	GetCharacterMovement()->DisableMovement();
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionProfileName("Ragdoll");
+	GetMesh()->SetAllBodiesSimulatePhysics(true);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void APlayerCharacter::BeginPlay()
@@ -114,17 +132,25 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 }
 
 void APlayerCharacter::SpawnWeapon()
-{	
+{
+	if(IsLocallyControlled())
+	{
+		ServerSpawnWeapon();
+	}
+}
+
+void APlayerCharacter::ServerSpawnWeapon_Implementation()
+{
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Owner = this;
 	
 	CurrentWeapon = GetWorld()->SpawnActor<ABaseWeapon>(CurrentWeaponClass, FTransform(), SpawnParameters);
 	CurrentWeapon->AttachToComponent
-	(
-		GetMesh(),
-		FAttachmentTransformRules::KeepRelativeTransform,
-		FName("RightHandSocket")
-	);
+    (
+        GetMesh(),
+        FAttachmentTransformRules::KeepRelativeTransform,
+        FName("RightHandSocket")
+    );
 }
 
 void APlayerCharacter::LookUp(float Axis)

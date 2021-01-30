@@ -110,6 +110,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ToggleADS();
 
+	void Die();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiDie();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
@@ -118,6 +123,9 @@ protected:
 
 private:
 	void SpawnWeapon();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSpawnWeapon();
 
 	void LookUp(float Axis);
 	void Turn(float Axis);
