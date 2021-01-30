@@ -6,6 +6,8 @@
 
 #include "BaseWeapon.h"
 #include "Components/BoxComponent.h"
+#include "FPS/Player/PlayerCharacter.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -43,10 +45,20 @@ void AProjectileMaster::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* Ot
 {
 	if(HasAuthority())
 	{
-		ABaseWeapon* OwnerWeapon = Cast<ABaseWeapon>(GetOwner());
-		UGameplayStatics::ApplyDamage(OtherActor, OwnerWeapon->WeaponData.DamageMin, GetInstigatorController(), OwnerWeapon->GetOwner(), DamageTypeClass);
+		if(Cast<ACharacter>(OtherActor))
+		{
+			FBodyPartData* BodyPartData = DT_BodyParts->FindRow<FBodyPartData>(Hit.BoneName, "");
 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Hit Bone Name: %s"), *Hit.BoneName.ToString()));
+			ABaseWeapon* OwnerWeapon = Cast<ABaseWeapon>(GetOwner());
+
+			float Damage = 0.f;
+			if(BodyPartData)
+			{
+				Damage = OwnerWeapon->GetCalculatedDamage(BodyPartData->BodyPart);
+			}
+			
+			UGameplayStatics::ApplyDamage(OtherActor, Damage, GetInstigatorController(), OwnerWeapon->GetOwner(), DamageTypeClass);
+		}
 		
 		Destroy();
 	}

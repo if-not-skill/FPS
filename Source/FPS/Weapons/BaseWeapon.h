@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+#include "FPS/Player/PlayerCharacter.h"
+
 #include "Engine/DataTable.h"
 #include "GameFramework/Actor.h"
 #include "BaseWeapon.generated.h"
@@ -52,7 +54,10 @@ struct FWeaponData : public FTableRowBase
 	float DamageMin;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float DamageMax;
+	float Damage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TMap<EBodyPart, float> DamageMultipliers;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	int AmmoMax;
@@ -110,6 +115,8 @@ public:
 	
 public:	
 	ABaseWeapon();
+
+	float GetCalculatedDamage(enum class EBodyPart BodyPart);
 
 	void Fire();
 	void Reload();

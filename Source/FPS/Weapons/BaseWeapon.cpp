@@ -19,6 +19,13 @@ ABaseWeapon::ABaseWeapon()
 
 }
 
+float ABaseWeapon::GetCalculatedDamage(EBodyPart BodyPart)
+{
+	const float BodyMultiplier = WeaponData.DamageMultipliers[BodyPart];
+	
+	return WeaponData.Damage * BodyMultiplier;
+}
+
 void ABaseWeapon::Fire()
 {
 	const FVector SpawnLocation = WeaponMesh->GetSocketLocation("Muzzle");

@@ -4,8 +4,30 @@
 
 #include "CoreMinimal.h"
 
+
+#include "Engine/DataTable.h"
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
+
+
+UENUM(BlueprintType)
+enum class EBodyPart : uint8
+{
+	BP_Body UMETA(DisplayName="Body"),
+	BP_Legs UMETA(DisplayName="Legs"),
+	BP_Hands UMETA(DisplayName="Hands"),
+	BP_Head UMETA(DisplayName="Head"),
+};
+
+USTRUCT(BlueprintType)
+struct FBodyPartData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	EBodyPart BodyPart;
+};
+
 
 UCLASS()
 class FPS_API APlayerCharacter : public ACharacter

@@ -32,6 +32,9 @@ public:
 	float GravityScale;
 
 	UPROPERTY(EditDefaultsOnly)
+	class UDataTable* DT_BodyParts;
+
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UDamageType> DamageTypeClass;
 	
 public:	
