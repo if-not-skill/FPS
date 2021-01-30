@@ -89,6 +89,9 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	float LookValue;
 
+	UPROPERTY(EditDefaultsOnly)
+	float DestoyDelay;
+
 	UPROPERTY(EditDefaultsOnly, Category="CameraShake")
 	TSubclassOf<UCameraShakeBase> CameraShakeWalk;
 	
@@ -111,9 +114,6 @@ public:
 	void ToggleADS();
 
 	void Die();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiDie();
 
 protected:
 	virtual void BeginPlay() override;
@@ -169,5 +169,9 @@ private:
 	void Fire();
 	void Reload();
 	void GiveRecoil();
+
+	UFUNCTION(NetMulticast, Reliable)
+    void MultiDie();
 	
+	void CallDestroy();
 };

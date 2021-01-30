@@ -3,7 +3,6 @@
 
 #include "PlayerCharacter.h"
 
-
 #include "DrawDebugHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/DemoNetDriver.h"
@@ -13,6 +12,7 @@
 #include "Animation/AnimInstance.h"
 #include "Components/CapsuleComponent.h"
 #include "FPS/Components/HealthComponent.h"
+#include "FPS/Framework/FPSGameModeBase.h"
 
 
 // Sets default values
@@ -22,6 +22,8 @@ APlayerCharacter::APlayerCharacter()
 
 	VerticalSensitivity = 1.f;
 	HorizontalSensitivity = 1.f;
+
+	DestoyDelay = 3.f;
 
 	WalkSpeed = 150.f;
 	SprintSpeed = 660.f;
@@ -55,23 +57,6 @@ APlayerCharacter::APlayerCharacter()
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
-}
-
-void APlayerCharacter::Die()
-{
-	if(GetLocalRole() == ROLE_Authority)
-	{
-		MultiDie();
-	}
-}
-
-void APlayerCharacter::MultiDie_Implementation()
-{
-	GetCharacterMovement()->DisableMovement();
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetMesh()->SetCollisionProfileName("Ragdoll");
-	GetMesh()->SetAllBodiesSimulatePhysics(true);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void APlayerCharacter::BeginPlay()
@@ -366,6 +351,47 @@ void APlayerCharacter::GiveRecoil()
 
 	LookUp(VerticalRecoil);
 	Turn(HorizontalRecoil);	
+}
+
+void APlayerCharacter::Die()
+{
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		MultiDie();
+
+		AGameModeBase* GM = GetWorld()->GetAuthGameMode();
+		if(AFPSGameModeBase* GameMode = Cast<AFPSGameModeBase>(GM))
+		{
+			GameMode->Respawn(GetController());
+		}
+		
+		FTimerHandle TimerHandle_Destroy;
+		GetWorldTimerManager().SetTimer(TimerHandle_Destroy, this, &APlayerCharacter::CallDestroy, DestoyDelay);
+	}
+}
+
+void APlayerCharacter::MultiDie_Implementation()
+{
+	HealthComponent->DestroyComponent();
+	
+	GetCharacterMovement()->DisableMovement();
+
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	GetMesh()->SetCollisionProfileName("Ragdoll");
+	GetMesh()->SetAllBodiesSimulatePhysics(true);
+
+	GetCapsuleComponent()->DestroyComponent();
+
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	DisableInput(PlayerController);
+}
+
+void APlayerCharacter::CallDestroy()
+{
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		Destroy();
+	}
 }
 
 void APlayerCharacter::ServerSetControlRotationRep_Implementation()
