@@ -30,6 +30,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float GravityScale;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDamageType> DamageTypeClass;
 	
 public:	
 	AProjectileMaster();

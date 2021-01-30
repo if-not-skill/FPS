@@ -11,6 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimInstance.h"
+#include "FPS/Components/HealthComponent.h"
 
 
 // Sets default values
@@ -23,6 +24,9 @@ APlayerCharacter::APlayerCharacter()
 
 	WalkSpeed = 150.f;
 	SprintSpeed = 660.f;
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
+	HealthComponent->SetIsReplicated(true);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(GetMesh(), FName("CameraSocket"));

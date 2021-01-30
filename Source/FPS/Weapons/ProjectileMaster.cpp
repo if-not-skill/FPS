@@ -7,6 +7,7 @@
 #include "BaseWeapon.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 
 AProjectileMaster::AProjectileMaster()
@@ -42,8 +43,10 @@ void AProjectileMaster::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* Ot
 {
 	if(HasAuthority())
 	{
-	
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Hit: %s"), *OtherActor->GetName()));
+		ABaseWeapon* OwnerWeapon = Cast<ABaseWeapon>(GetOwner());
+		UGameplayStatics::ApplyDamage(OtherActor, OwnerWeapon->WeaponData.DamageMin, GetInstigatorController(), OwnerWeapon->GetOwner(), DamageTypeClass);
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Hit Bone Name: %s"), *Hit.BoneName.ToString()));
 		
 		Destroy();
 	}

@@ -31,6 +31,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Components")
 	class USkeletalMeshComponent* EquipmentMesh;
 
+	UPROPERTY(EditDefaultsOnly, Category="Components")
+	class UHealthComponent* HealthComponent;
+
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	class ABaseWeapon* CurrentWeapon;
 
