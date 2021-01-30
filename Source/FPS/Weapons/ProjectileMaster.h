@@ -36,6 +36,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UDamageType> DamageTypeClass;
+
+private:
+	FVector StartLocation;
 	
 public:	
 	AProjectileMaster();

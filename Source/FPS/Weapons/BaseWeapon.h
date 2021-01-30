@@ -44,52 +44,61 @@ struct FWeaponData : public FTableRowBase
 	
 	float FireDelay;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Reload")
 	float ReloadDelay;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Reload")
+	float EmptyReloadDelay;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float WeaponSpread;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Damage")
 	float DamageMin;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Damage")
 	float Damage;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Damage")
+	float FireRange;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Damage")
+	float DamageDropMultiplier;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Damage")
 	TMap<EBodyPart, float> DamageMultipliers;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Ammo")
 	int AmmoMax;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Ammo")
 	int AmmoInMagazine;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Recoil")
 	FVector2D VerticalRecoil;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Recoil")
 	FVector2D HorizontalRecoil;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Montages")
 	UAnimMontage* FiringMontage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Montages")
 	UAnimMontage* CharFireMontage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Montages")
 	UAnimMontage* ReloadMontage;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Montages")
 	UAnimMontage* ReloadEmptyMontage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Montages")
 	UAnimMontage* CharReloadMontage;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Montages")
 	UAnimMontage* CharReloadEmptyMontage;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Ammo")
 	TSubclassOf<class AProjectileMaster> ProjectileClass;
 
 };
@@ -116,7 +125,7 @@ public:
 public:	
 	ABaseWeapon();
 
-	float GetCalculatedDamage(enum class EBodyPart BodyPart);
+	float GetCalculatedDamage(EBodyPart BodyPart, float Distance);
 
 	void Fire();
 	void Reload();

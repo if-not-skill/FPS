@@ -54,7 +54,8 @@ void AProjectileMaster::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* Ot
 			float Damage = 0.f;
 			if(BodyPartData)
 			{
-				Damage = OwnerWeapon->GetCalculatedDamage(BodyPartData->BodyPart);
+				const float Distance = (StartLocation - Hit.Location).Size() / 100.f;
+				Damage = OwnerWeapon->GetCalculatedDamage(BodyPartData->BodyPart, Distance);
 			}
 			
 			UGameplayStatics::ApplyDamage(OtherActor, Damage, GetInstigatorController(), OwnerWeapon->GetOwner(), DamageTypeClass);
@@ -67,6 +68,8 @@ void AProjectileMaster::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* Ot
 void AProjectileMaster::BeginPlay()
 {
 	Super::BeginPlay();
+
+	StartLocation = GetActorLocation();
 
 	FTimerHandle DummyHandle;
 	GetWorldTimerManager().SetTimer(DummyHandle, this, &AProjectileMaster::ApplyGravity, GravityDelay);

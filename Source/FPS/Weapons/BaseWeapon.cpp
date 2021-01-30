@@ -19,11 +19,19 @@ ABaseWeapon::ABaseWeapon()
 
 }
 
-float ABaseWeapon::GetCalculatedDamage(EBodyPart BodyPart)
-{
+float ABaseWeapon::GetCalculatedDamage(EBodyPart BodyPart, float Distance)
+{	
 	const float BodyMultiplier = WeaponData.DamageMultipliers[BodyPart];
+
+	float Damage =  (WeaponData.Damage * BodyMultiplier);
+
+	if(WeaponData.FireRate < Distance)
+	{
+		Distance = Distance - WeaponData.FireRate;
+		Damage = Damage - (Damage * Distance * WeaponData.DamageDropMultiplier);
+	}
 	
-	return WeaponData.Damage * BodyMultiplier;
+	return FMath::Clamp(Damage, WeaponData.DamageMin, WeaponData.Damage);
 }
 
 void ABaseWeapon::Fire()
