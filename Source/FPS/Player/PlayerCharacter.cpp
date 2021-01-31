@@ -112,13 +112,13 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(APlayerCharacter, ControlRotationRep);
 	DOREPLIFETIME(APlayerCharacter, bIsSprinting);
-	DOREPLIFETIME(APlayerCharacter, bIsAiming);
+	DOREPLIFETIME(APlayerCharacter, bIsAimingRep);
 	DOREPLIFETIME(APlayerCharacter, CurrentWeapon);
 }
 
 void APlayerCharacter::SpawnWeapon()
 {
-	if(IsLocallyControlled())
+	if(IsLocallyControlled() || GetLocalRole() == ROLE_Authority)
 	{
 		ServerSpawnWeapon();
 	}
@@ -191,7 +191,7 @@ void APlayerCharacter::StartSprint()
 	if(!HasAuthority())
 	{
 		if(GetCharacterMovement()->IsCrouching()) UnCrouch();
-		if(bIsAiming) StopAiming();
+		if(bIsAimingRep) StopAiming();
 		
 		ServerStartSprint();
 	}
@@ -214,27 +214,33 @@ void APlayerCharacter::StopSprint()
 void APlayerCharacter::StartAiming()
 {
 	if(bIsSprinting) StopSprint();
-		
+	
+	bIsAiming = true;
+	
 	ServerStartAiming();
 	
 	ToggleADS();
+	
 }
 
 void APlayerCharacter::StopAiming()
 {
+	bIsAiming = false;
+	
 	ServerStopAiming();
 
 	ToggleADS();
+	
 }
 
 void APlayerCharacter::ServerStartAiming_Implementation()
 {
-	bIsAiming = true;
+	bIsAimingRep = true;
 }
 
 void APlayerCharacter::ServerStopAiming_Implementation()
 {
-	bIsAiming = false;
+	bIsAimingRep = false;
 }
 
 void APlayerCharacter::StartCrouch()
@@ -321,7 +327,7 @@ void APlayerCharacter::Fire()
 		}
 		else
 		{
-			if(bIsAiming)
+			if(bIsAimingRep)
 			{
 				StopAiming();
 			}

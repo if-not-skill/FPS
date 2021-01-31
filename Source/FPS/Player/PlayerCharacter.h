@@ -73,9 +73,12 @@ public:
 
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	bool bIsSprinting;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsAiming;
 	
 	UPROPERTY(Replicated, BlueprintReadWrite)
-	bool bIsAiming;
+	bool bIsAimingRep;
 
 	UPROPERTY(BlueprintReadWrite)
 	float MoveForwardValue;
