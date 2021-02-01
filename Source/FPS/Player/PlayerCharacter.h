@@ -93,7 +93,7 @@ public:
 	float LookValue;
 
 	UPROPERTY(EditDefaultsOnly)
-	float DestoyDelay;
+	float DestroyDelay;
 
 	UPROPERTY(EditDefaultsOnly, Category="CameraShake")
 	TSubclassOf<UCameraShakeBase> CameraShakeWalk;

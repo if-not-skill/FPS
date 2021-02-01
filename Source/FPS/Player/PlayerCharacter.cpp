@@ -23,7 +23,7 @@ APlayerCharacter::APlayerCharacter()
 	VerticalSensitivity = 1.f;
 	HorizontalSensitivity = 1.f;
 
-	DestoyDelay = 3.f;
+	DestroyDelay = 3.f;
 
 	WalkSpeed = 150.f;
 	SprintSpeed = 660.f;
@@ -372,7 +372,7 @@ void APlayerCharacter::Die()
 		}
 		
 		FTimerHandle TimerHandle_Destroy;
-		GetWorldTimerManager().SetTimer(TimerHandle_Destroy, this, &APlayerCharacter::CallDestroy, DestoyDelay);
+		GetWorldTimerManager().SetTimer(TimerHandle_Destroy, this, &APlayerCharacter::CallDestroy, DestroyDelay);
 	}
 }
 
