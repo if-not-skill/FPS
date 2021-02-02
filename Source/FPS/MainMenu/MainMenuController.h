@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/SaveGame.h"
-#include "PlayerSaveGame.generated.h"
+#include "GameFramework/PlayerController.h"
+#include "MainMenuController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FPS_API UPlayerSaveGame : public USaveGame
+class FPS_API AMainMenuController : public APlayerController
 {
 	GENERATED_BODY()
 	
