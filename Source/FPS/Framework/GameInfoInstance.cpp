@@ -3,7 +3,6 @@
 
 #include "GameInfoInstance.h"
 
-#include "Blueprint/UserWidget.h"
 #include "Engine/DemoNetDriver.h"
 
 

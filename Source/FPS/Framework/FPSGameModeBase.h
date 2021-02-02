@@ -17,20 +17,26 @@ class FPS_API AFPSGameModeBase : public AGameModeBase
 public:
 	AFPSGameModeBase();
 
+	UFUNCTION(Server, Reliable)
 	void Respawn(AController* Controller);
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void SwapPlayerControllers(APlayerController* OldPC, APlayerController* NewPC) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	AActor* GetSpawnPoint() const;
 	
-	UFUNCTION()
+	UFUNCTION(Server, Reliable)
 	void Spawn(AController* Controller);
 
 public:
 	UPROPERTY(EditDefaultsOnly)
 	float SpawnDelay;
+
+	UPROPERTY(Replicated, BlueprintReadWrite)
+	TArray<APlayerController*> AllPlayerControllers;
 	
 private:
 	UPROPERTY()

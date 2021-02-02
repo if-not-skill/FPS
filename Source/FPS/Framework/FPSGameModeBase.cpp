@@ -4,15 +4,17 @@
 #include "FPSGameModeBase.h"
 
 
+#include "Engine/DemoNetDriver.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+
 
 AFPSGameModeBase::AFPSGameModeBase()
 {
 	SpawnDelay = 3.f;
 }
 
-void AFPSGameModeBase::Respawn(AController* Controller)
+void AFPSGameModeBase::Respawn_Implementation(AController* Controller)
 {
 	if(Controller){
 		if(GetLocalRole() == ROLE_Authority)
@@ -31,6 +33,20 @@ void AFPSGameModeBase::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStartPoints);
 }
 
+void AFPSGameModeBase::SwapPlayerControllers(APlayerController* OldPC, APlayerController* NewPC)
+{
+	Super::SwapPlayerControllers(OldPC, NewPC);
+	
+	AllPlayerControllers.Add(NewPC);
+}
+
+void AFPSGameModeBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSGameModeBase, AllPlayerControllers)
+}
+
 AActor* AFPSGameModeBase::GetSpawnPoint() const
 {
 	const int32 NumberSpawnPoint = FMath::RandRange(0, PlayerStartPoints.Num() - 1);
@@ -38,7 +54,7 @@ AActor* AFPSGameModeBase::GetSpawnPoint() const
 	return PlayerStartPoints[NumberSpawnPoint];
 }
 
-void AFPSGameModeBase::Spawn(AController* Controller)
+void AFPSGameModeBase::Spawn_Implementation(AController* Controller)
 {
 	if(AActor* StartPoint = GetSpawnPoint())
 	{
