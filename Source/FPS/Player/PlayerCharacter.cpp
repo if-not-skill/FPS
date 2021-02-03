@@ -243,6 +243,15 @@ void APlayerCharacter::StartCrouch()
 	}
 	else
 	{
+		const float Speed = GetVelocity().Size();
+		const float ForwardVelocity = FVector::DotProduct(GetVelocity(), GetActorForwardVector());
+		
+		if(ForwardVelocity > 0.f && Speed > WalkSpeed) 
+		{
+			Slide();
+			return;
+		}
+		
 		Crouch();
 	}
 }
@@ -349,6 +358,24 @@ void APlayerCharacter::GiveRecoil()
 
 	LookUp(VerticalRecoil);
 	Turn(HorizontalRecoil);	
+}
+
+void APlayerCharacter::Slide()
+{
+	ServerSlide();
+}
+
+void APlayerCharacter::MultiSlide_Implementation()
+{
+	if(UAnimInstance* CharAnimInstance = GetMesh()->GetAnimInstance())
+	{
+		CharAnimInstance->Montage_Play(SlideMontage);
+	}
+}
+
+void APlayerCharacter::ServerSlide_Implementation()
+{
+	MultiSlide();
 }
 
 void APlayerCharacter::Die()

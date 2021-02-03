@@ -95,6 +95,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float DestroyDelay;
 
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* SlideMontage;
+
 	UPROPERTY(EditDefaultsOnly, Category="CameraShake")
 	TSubclassOf<UCameraShakeBase> CameraShakeWalk;
 	
@@ -172,6 +175,14 @@ private:
 	void Fire();
 	void Reload();
 	void GiveRecoil();
+
+	void Slide();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSlide();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiSlide();
 
 	UFUNCTION(NetMulticast, Reliable)
     void MultiDie();
