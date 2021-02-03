@@ -127,6 +127,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void HitVisual(FVector HitLocation);
+
+	UFUNCTION(Client, Reliable)
+	void ShowHitVisual(FVector HitLocation);
 	
 	void Die();
 

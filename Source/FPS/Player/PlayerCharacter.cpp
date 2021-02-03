@@ -392,6 +392,11 @@ void APlayerCharacter::ServerSlide_Implementation()
 	MultiSlide();
 }
 
+void APlayerCharacter::ShowHitVisual_Implementation(FVector HitLocation)
+{
+	HitVisual(HitLocation);
+}
+
 void APlayerCharacter::Die()
 {
 	bIsDie = true;
