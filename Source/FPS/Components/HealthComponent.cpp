@@ -43,6 +43,10 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 	{
 		if(APlayerCharacter* Char = Cast<APlayerCharacter>(GetOwner()))
 		{
+			if(APlayerCharacter* Enemy = Cast<APlayerCharacter>(DamageCauser))
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Killer: %s"), *Enemy->GetName()));
+			}
 			Char->Die();
 		}
 	}

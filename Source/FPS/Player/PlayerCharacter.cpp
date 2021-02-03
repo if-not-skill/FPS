@@ -59,12 +59,26 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
 
+void APlayerCharacter::StartSliding()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void APlayerCharacter::EndSliding()
+{
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SpawnWeapon();
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	
+	bIsDie = false;
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -380,6 +394,8 @@ void APlayerCharacter::ServerSlide_Implementation()
 
 void APlayerCharacter::Die()
 {
+	bIsDie = true;
+	
 	if(GetLocalRole() == ROLE_Authority)
 	{
 		MultiDie();

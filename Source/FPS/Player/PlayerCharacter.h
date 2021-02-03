@@ -74,8 +74,8 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	bool bIsSprinting;
 
-	// UPROPERTY(BlueprintReadOnly)
-	// bool bIsAiming;
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsDie;
 	
 	UPROPERTY(Replicated, BlueprintReadWrite)
 	bool bIsAimingRep;
@@ -119,6 +119,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ToggleADS(bool IsAiming);
 
+	UFUNCTION(BlueprintCallable)
+	void StartSliding();
+	
+	UFUNCTION(BlueprintCallable)
+    void EndSliding();
+	
 	void Die();
 
 protected:
