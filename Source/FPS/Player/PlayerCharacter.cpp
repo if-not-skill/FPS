@@ -61,14 +61,12 @@ APlayerCharacter::APlayerCharacter()
 
 void APlayerCharacter::StartSliding()
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Crouch();
 }
 
 void APlayerCharacter::EndSliding()
 {
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	UnCrouch();
 }
 
 void APlayerCharacter::BeginPlay()
