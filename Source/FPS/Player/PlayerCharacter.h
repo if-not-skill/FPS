@@ -74,8 +74,8 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	bool bIsSprinting;
 
-	UPROPERTY(BlueprintReadOnly)
-	bool bIsAiming;
+	// UPROPERTY(BlueprintReadOnly)
+	// bool bIsAiming;
 	
 	UPROPERTY(Replicated, BlueprintReadWrite)
 	bool bIsAimingRep;
@@ -114,7 +114,7 @@ public:
 	APlayerCharacter();
 	
 	UFUNCTION(BlueprintImplementableEvent)
-	void ToggleADS();
+	void ToggleADS(bool IsAiming);
 
 	void Die();
 

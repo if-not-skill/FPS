@@ -214,23 +214,15 @@ void APlayerCharacter::StopSprint()
 void APlayerCharacter::StartAiming()
 {
 	if(bIsSprinting) StopSprint();
-	
-	bIsAiming = true;
-	
+
 	ServerStartAiming();
-	
-	ToggleADS();
-	
+	ToggleADS(true);
 }
 
 void APlayerCharacter::StopAiming()
 {
-	bIsAiming = false;
-	
 	ServerStopAiming();
-
-	ToggleADS();
-	
+	ToggleADS(false);
 }
 
 void APlayerCharacter::ServerStartAiming_Implementation()
