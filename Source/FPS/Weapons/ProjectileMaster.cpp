@@ -5,7 +5,7 @@
 
 
 #include "BaseWeapon.h"
-#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "FPS/Player/PlayerCharacter.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -19,8 +19,8 @@ AProjectileMaster::AProjectileMaster()
 	GravityDelay = 0.1f;
 	GravityScale = 3.5f;
 
-	ProjectileCollision = CreateDefaultSubobject<UBoxComponent>(FName("ProjectileCollision"));
-	ProjectileCollision->InitBoxExtent(FVector(2.f));
+	ProjectileCollision = CreateDefaultSubobject<USphereComponent>(FName("ProjectileCollision"));
+	ProjectileCollision->InitSphereRadius(2.f);
 	ProjectileCollision->BodyInstance.SetCollisionProfileName("Projectile");
 	ProjectileCollision->OnComponentHit.AddDynamic(this, &AProjectileMaster::OnProjectileHit);
 	SetRootComponent(ProjectileCollision);
@@ -30,9 +30,6 @@ AProjectileMaster::AProjectileMaster()
 	ProjectileMovement->InitialSpeed = 40000.f;
 	ProjectileMovement->bShouldBounce = false;
 	ProjectileMovement->ProjectileGravityScale = 0.f;
-
-	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("ProjectileMesh"));
-	ProjectileMesh->SetupAttachment(RootComponent);
 
 	ProjectileParticle = CreateDefaultSubobject<UParticleSystemComponent>(FName("ProjectileParticle"));
 	ProjectileParticle->SetupAttachment(RootComponent);

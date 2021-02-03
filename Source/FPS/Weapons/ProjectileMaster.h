@@ -14,13 +14,10 @@ class FPS_API AProjectileMaster : public AActor
 
 public:
 	UPROPERTY(EditDefaultsOnly)
-	class UBoxComponent* ProjectileCollision;
+	class USphereComponent* ProjectileCollision;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	class UProjectileMovementComponent* ProjectileMovement;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UStaticMeshComponent* ProjectileMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UParticleSystemComponent* ProjectileParticle;	
