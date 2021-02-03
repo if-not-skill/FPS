@@ -39,14 +39,17 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 
 	CurrentHealthPoints = FMath::Clamp(CurrentHealthPoints - Damage, 0.f, MaxHealthPoints);
 
-	if(CurrentHealthPoints == 0.f)
+	if(APlayerCharacter* Char = Cast<APlayerCharacter>(GetOwner()))
 	{
-		if(APlayerCharacter* Char = Cast<APlayerCharacter>(GetOwner()))
+		Char->HitVisual(DamageCauser->GetActorLocation());
+		
+		if(APlayerCharacter* Enemy = Cast<APlayerCharacter>(DamageCauser))
 		{
-			if(APlayerCharacter* Enemy = Cast<APlayerCharacter>(DamageCauser))
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Killer: %s"), *Enemy->GetName()));
-			}
+			
+		}
+		
+		if(CurrentHealthPoints == 0.f)
+		{
 			Char->Die();
 		}
 	}

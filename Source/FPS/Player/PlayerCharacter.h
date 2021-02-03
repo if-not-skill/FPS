@@ -124,6 +124,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
     void EndSliding();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void HitVisual(FVector HitLocation);
 	
 	void Die();
 
