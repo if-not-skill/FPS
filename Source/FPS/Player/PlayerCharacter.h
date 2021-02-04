@@ -142,6 +142,9 @@ public:
 	UFUNCTION(BlueprintCallable)
     void EndReload();
 
+	UFUNCTION(Server, Unreliable, BlueprintCallable)
+	void ServerHitAudio(class USoundCue* HitSound, FVector Location);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
@@ -209,4 +212,7 @@ private:
     void MultiDie();
 	
 	void CallDestroy();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MultiHitAudio(class USoundCue* HitSound, FVector Location);
 };

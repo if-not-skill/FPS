@@ -13,6 +13,7 @@
 #include "Components/CapsuleComponent.h"
 #include "FPS/Components/HealthComponent.h"
 #include "FPS/Framework/FPSGameModeBase.h"
+#include "Sound/SoundCue.h"
 
 
 // Sets default values
@@ -447,6 +448,11 @@ void APlayerCharacter::EndReload()
 	}
 }
 
+void APlayerCharacter::ServerHitAudio_Implementation(USoundCue* HitSound, FVector Location)
+{
+	MultiHitAudio(HitSound, Location);
+}
+
 void APlayerCharacter::MultiDie_Implementation()
 {
 	HealthComponent->DestroyComponent();
@@ -469,6 +475,11 @@ void APlayerCharacter::CallDestroy()
 	{
 		Destroy();
 	}
+}
+
+void APlayerCharacter::MultiHitAudio_Implementation(USoundCue* HitSound, FVector Location)
+{
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, Location);
 }
 
 void APlayerCharacter::ServerSetControlRotationRep_Implementation()

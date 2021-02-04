@@ -13,7 +13,7 @@ class FPS_API AProjectileMaster : public AActor
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	class USphereComponent* ProjectileCollision;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -40,6 +40,9 @@ private:
 public:	
 	AProjectileMaster();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayHitSound(class APlayerCharacter* CharRef, const FHitResult& Hit, FVector HitLocation);
+	
 	UFUNCTION()
 	void OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	

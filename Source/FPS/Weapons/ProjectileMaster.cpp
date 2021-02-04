@@ -9,8 +9,9 @@
 #include "FPS/Player/PlayerCharacter.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Kismet/GameplayStatics.h"
+
 
 AProjectileMaster::AProjectileMaster()
 {
@@ -23,6 +24,7 @@ AProjectileMaster::AProjectileMaster()
 	ProjectileCollision->InitSphereRadius(2.f);
 	ProjectileCollision->BodyInstance.SetCollisionProfileName("Projectile");
 	ProjectileCollision->OnComponentHit.AddDynamic(this, &AProjectileMaster::OnProjectileHit);
+	ProjectileCollision->bReturnMaterialOnMove = true;
 	SetRootComponent(ProjectileCollision);
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(FName("ProjectileMovement"));
@@ -40,6 +42,10 @@ AProjectileMaster::AProjectileMaster()
 void AProjectileMaster::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
+	APlayerCharacter* CharRef = Cast<APlayerCharacter>(GetOwner()->GetOwner());
+	
+	PlayHitSound(CharRef, Hit, Hit.Location);
+	
 	if(HasAuthority())
 	{
 		if(Cast<ACharacter>(OtherActor))
