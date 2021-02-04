@@ -261,7 +261,7 @@ void APlayerCharacter::StartCrouch()
 		const float Speed = GetVelocity().Size();
 		const float ForwardVelocity = FVector::DotProduct(GetVelocity(), GetActorForwardVector());
 		
-		if(ForwardVelocity > 0.f && Speed > WalkSpeed) 
+		if(ForwardVelocity > 0.f && Speed > WalkSpeed + 80.f) 
 		{
 			Slide();
 			return;
