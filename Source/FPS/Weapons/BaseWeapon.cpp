@@ -133,9 +133,6 @@ void ABaseWeapon::ServerReload_Implementation()
 {
 	if(CurrentAmmo < WeaponData.AmmoInMagazine)
 	{
-		FTimerHandle TimerHandle_EndReload;
-		
-		GetWorldTimerManager().SetTimer(TimerHandle_EndReload, this, &ABaseWeapon::ServerEndReload, WeaponData.ReloadDelay);
 		MulticastReload();
 	}
 }

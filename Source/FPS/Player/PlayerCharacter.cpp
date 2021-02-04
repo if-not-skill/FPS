@@ -225,10 +225,13 @@ void APlayerCharacter::StopSprint()
 
 void APlayerCharacter::StartAiming()
 {
-	if(bIsSprinting) StopSprint();
+	if(!bIsReloading)
+	{
+		if(bIsSprinting) StopSprint();
 
-	ServerStartAiming();
-	ToggleADS(true);
+		ServerStartAiming();
+		ToggleADS(true);
+	}
 }
 
 void APlayerCharacter::StopAiming()
@@ -331,7 +334,7 @@ void APlayerCharacter::ReleasedFire()
 
 void APlayerCharacter::Fire()
 {
-	if(CurrentWeapon)
+	if(CurrentWeapon && !bIsReloading)
 	{
 		if(CurrentWeapon->CurrentAmmo > 0)
 		{
@@ -352,7 +355,10 @@ void APlayerCharacter::Fire()
 
 void APlayerCharacter::Reload()
 {
-	CurrentWeapon->Reload();
+	if(!bIsReloading)
+	{
+		CurrentWeapon->Reload();
+	}
 }
 
 void APlayerCharacter::GiveRecoil()
@@ -411,6 +417,33 @@ void APlayerCharacter::Die()
 		
 		FTimerHandle TimerHandle_Destroy;
 		GetWorldTimerManager().SetTimer(TimerHandle_Destroy, this, &APlayerCharacter::CallDestroy, DestroyDelay);
+	}
+}
+
+void APlayerCharacter::StartReload()
+{
+	if(IsLocallyControlled())
+	{
+		bIsReloading = true;
+
+		if(bIsSprinting)
+		{
+			StopSprint();
+		}
+		
+		if(bIsAimingRep)
+		{
+			StopAiming();
+		}
+	}
+}
+
+void APlayerCharacter::EndReload()
+{
+	if(IsLocallyControlled())
+	{
+		bIsReloading = false;
+		CurrentWeapon->ServerEndReload();
 	}
 }
 

@@ -81,6 +81,9 @@ public:
 	bool bIsAimingRep;
 
 	UPROPERTY(BlueprintReadWrite)
+	bool bIsReloading;
+
+	UPROPERTY(BlueprintReadWrite)
 	float MoveForwardValue;
 	
 	UPROPERTY(BlueprintReadWrite)
@@ -132,6 +135,12 @@ public:
 	void ShowHitVisual(FVector HitLocation);
 	
 	void Die();
+
+	UFUNCTION(BlueprintCallable)
+	void StartReload();
+	
+	UFUNCTION(BlueprintCallable)
+    void EndReload();
 
 protected:
 	virtual void BeginPlay() override;

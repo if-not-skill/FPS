@@ -43,12 +43,6 @@ struct FWeaponData : public FTableRowBase
 	float FireRate;
 	
 	float FireDelay;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Reload")
-	float ReloadDelay;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Reload")
-	float EmptyReloadDelay;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float WeaponSpread;
@@ -129,6 +123,9 @@ public:
 
 	void Fire();
 	void Reload();
+	
+	UFUNCTION(Server, Reliable)
+    void ServerEndReload();
 
 protected:
 	virtual void BeginPlay() override;
@@ -153,6 +150,4 @@ private:
 	ACharacter* GetCharacterOwner() const;
 	UAnimInstance* GetCharacterAnimInstance() const;
 
-	UFUNCTION(Server, Reliable)
-	void ServerEndReload();
 };
