@@ -11,6 +11,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 AProjectileMaster::AProjectileMaster()
@@ -43,8 +44,11 @@ void AProjectileMaster::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* Ot
 	FVector NormalImpulse, const FHitResult& Hit)
 {
 	APlayerCharacter* CharRef = Cast<APlayerCharacter>(GetOwner()->GetOwner());
+
+	const FRotator SpawnDecalRotation = UKismetMathLibrary::MakeRotFromX(Hit.ImpactPoint);
+	const FRotator SpawnImpactParticle = UKismetMathLibrary::MakeRotFromZ(Hit.ImpactNormal);
 	
-	PlayHitSound(CharRef, Hit, Hit.Location);
+	StartHitReact(CharRef, Hit, Hit.Location, SpawnDecalRotation, SpawnImpactParticle);
 	
 	if(HasAuthority())
 	{

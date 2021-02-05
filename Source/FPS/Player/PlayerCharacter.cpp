@@ -70,6 +70,11 @@ void APlayerCharacter::EndSliding()
 	UnCrouch();
 }
 
+void APlayerCharacter::ServerHitParticle_Implementation(UParticleSystem* ImpactParticle, FVector Location, FRotator Rotation)
+{
+	MultiSpawnImpactParticle(ImpactParticle, Location, Rotation);
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -475,6 +480,11 @@ void APlayerCharacter::CallDestroy()
 	{
 		Destroy();
 	}
+}
+
+void APlayerCharacter::MultiSpawnImpactParticle_Implementation(UParticleSystem* ImpactParticle, FVector Location, FRotator Rotation)
+{
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, Location, Rotation);
 }
 
 void APlayerCharacter::MultiHitAudio_Implementation(USoundCue* HitSound, FVector Location)

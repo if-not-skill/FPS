@@ -41,7 +41,7 @@ public:
 	AProjectileMaster();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void PlayHitSound(class APlayerCharacter* CharRef, const FHitResult& Hit, FVector HitLocation);
+	void StartHitReact(class APlayerCharacter* CharRef, const FHitResult& Hit, FVector Location, FRotator SpawnDecalRotation, FRotator SpawnImpactParticle);
 	
 	UFUNCTION()
 	void OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

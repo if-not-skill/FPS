@@ -145,6 +145,9 @@ public:
 	UFUNCTION(Server, Unreliable, BlueprintCallable)
 	void ServerHitAudio(class USoundCue* HitSound, FVector Location);
 
+	UFUNCTION(Server, Unreliable, BlueprintCallable)
+	void ServerHitParticle(UParticleSystem* ImpactParticle, FVector Location, FRotator Rotation);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
@@ -215,4 +218,7 @@ private:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void MultiHitAudio(class USoundCue* HitSound, FVector Location);
+	
+	UFUNCTION(NetMulticast, Unreliable)
+    void MultiSpawnImpactParticle(UParticleSystem* ImpactParticle, FVector Location, FRotator Rotation);
 };
