@@ -11,6 +11,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimInstance.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/DecalComponent.h"
+#include "Engine/DecalActor.h"
 #include "FPS/Components/HealthComponent.h"
 #include "FPS/Framework/FPSGameModeBase.h"
 #include "Sound/SoundCue.h"
@@ -75,6 +77,11 @@ void APlayerCharacter::ServerHitParticle_Implementation(UParticleSystem* ImpactP
 	MultiSpawnImpactParticle(ImpactParticle, Location, Rotation);
 }
 
+void APlayerCharacter::ServerSpawnHoleDecal_Implementation(UMaterialInstance* Material, FVector Location, FRotator Rotation)
+{
+	MultiSpawnHoleDecal(Material, Location, Rotation);
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -131,12 +138,14 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, ControlRotationRep);
 	DOREPLIFETIME(APlayerCharacter, bIsSprinting);
 	DOREPLIFETIME(APlayerCharacter, bIsAimingRep);
+	DOREPLIFETIME(APlayerCharacter, FirstWeapon);
+	DOREPLIFETIME(APlayerCharacter, SecondWeapon);
 	DOREPLIFETIME(APlayerCharacter, CurrentWeapon);
 }
 
 void APlayerCharacter::SpawnWeapon()
 {
-	if(IsLocallyControlled() || GetLocalRole() == ROLE_Authority)
+	if(HasAuthority())
 	{
 		ServerSpawnWeapon();
 	}
@@ -147,13 +156,23 @@ void APlayerCharacter::ServerSpawnWeapon_Implementation()
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Owner = this;
 	
-	CurrentWeapon = GetWorld()->SpawnActor<ABaseWeapon>(CurrentWeaponClass, FTransform(), SpawnParameters);
-	CurrentWeapon->AttachToComponent
+	FirstWeapon = GetWorld()->SpawnActor<ABaseWeapon>(FirstWeaponClass, FTransform(), SpawnParameters);
+	FirstWeapon->AttachToComponent
     (
         GetMesh(),
         FAttachmentTransformRules::KeepRelativeTransform,
         FName("RightHandSocket")
     );
+
+	SecondWeapon = GetWorld()->SpawnActor<ABaseWeapon>(SecondWeaponClass, FTransform(), SpawnParameters);
+	SecondWeapon->AttachToComponent
+    (
+        GetMesh(),
+        FAttachmentTransformRules::KeepRelativeTransform,
+        FName("SecondHandWeapon")
+    );
+
+	CurrentWeapon = FirstWeapon;
 }
 
 void APlayerCharacter::LookUp(float Axis)
@@ -301,6 +320,8 @@ void APlayerCharacter::CheckSprintDirection()
 
 void APlayerCharacter::PressedFire()
 {
+	if(!CurrentWeapon) return;
+	
 	switch (CurrentWeapon->WeaponData.FireMode)
 	{
 		case EFireMode::FM_Auto:
@@ -413,6 +434,13 @@ void APlayerCharacter::Die()
 	
 	if(GetLocalRole() == ROLE_Authority)
 	{
+		HealthComponent->DestroyComponent();
+	
+		GetCharacterMovement()->DisableMovement();
+		
+		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+		DisableInput(PlayerController);
+		
 		MultiDie();
 
 		AGameModeBase* GM = GetWorld()->GetAuthGameMode();
@@ -460,25 +488,40 @@ void APlayerCharacter::ServerHitAudio_Implementation(USoundCue* HitSound, FVecto
 
 void APlayerCharacter::MultiDie_Implementation()
 {
-	HealthComponent->DestroyComponent();
-	
-	GetCharacterMovement()->DisableMovement();
-
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetCollisionProfileName("Ragdoll");
 	GetMesh()->SetAllBodiesSimulatePhysics(true);
 
 	GetCapsuleComponent()->DestroyComponent();
-
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	DisableInput(PlayerController);
 }
 
 void APlayerCharacter::CallDestroy()
 {
 	if(GetLocalRole() == ROLE_Authority)
 	{
+		if(FirstWeapon)
+		{
+			FirstWeapon->Destroy();
+		}
+		
+		if(SecondWeapon)
+		{
+			SecondWeapon->Destroy();
+		}
+		
 		Destroy();
+	}
+}
+
+void APlayerCharacter::MultiSpawnHoleDecal_Implementation(UMaterialInstance* Material, FVector Location, FRotator Rotation)
+{
+	ADecalActor* decal = GetWorld()->SpawnActor<ADecalActor>(Location, Rotation);
+	if (decal)
+	{
+		decal->SetDecalMaterial(Material);
+		decal->SetLifeSpan(30.0f);
+		decal->GetDecal()->SetFadeScreenSize(0.001f);
+		decal->GetDecal()->DecalSize = FVector(10.f, 10.f, 10.f);
 	}
 }
 

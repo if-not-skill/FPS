@@ -57,11 +57,20 @@ public:
 	class UHealthComponent* HealthComponent;
 
 	UPROPERTY(BlueprintReadWrite, Replicated)
+	class ABaseWeapon* FirstWeapon;
+	
+	UPROPERTY(BlueprintReadWrite, Replicated)
+	class ABaseWeapon* SecondWeapon;
+
+	UPROPERTY(BlueprintReadOnly, Replicated)
 	class ABaseWeapon* CurrentWeapon;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Spawning")
+	TSubclassOf<ABaseWeapon> FirstWeaponClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="Spawning")
-	TSubclassOf<ABaseWeapon> CurrentWeaponClass;
-
+	TSubclassOf<ABaseWeapon> SecondWeaponClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Settings")
 	float HorizontalSensitivity;
 	
@@ -148,6 +157,12 @@ public:
 	UFUNCTION(Server, Unreliable, BlueprintCallable)
 	void ServerHitParticle(UParticleSystem* ImpactParticle, FVector Location, FRotator Rotation);
 
+	UFUNCTION(Server, Unreliable, BlueprintCallable)
+	void ServerSpawnHoleDecal(UMaterialInstance* Material, FVector Location, FRotator Rotation);
+	
+	UFUNCTION(Server, Reliable)
+    void ServerSpawnWeapon();
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
@@ -156,9 +171,6 @@ protected:
 
 private:
 	void SpawnWeapon();
-
-	UFUNCTION(Server, Reliable)
-	void ServerSpawnWeapon();
 
 	void LookUp(float Axis);
 	void Turn(float Axis);
@@ -221,4 +233,8 @@ private:
 	
 	UFUNCTION(NetMulticast, Unreliable)
     void MultiSpawnImpactParticle(UParticleSystem* ImpactParticle, FVector Location, FRotator Rotation);
+	
+	UFUNCTION(NetMulticast, Unreliable, BlueprintCallable)
+    void MultiSpawnHoleDecal(UMaterialInstance* Material, FVector Location, FRotator Rotation);
+
 };

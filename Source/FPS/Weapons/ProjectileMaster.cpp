@@ -43,15 +43,14 @@ AProjectileMaster::AProjectileMaster()
 void AProjectileMaster::OnProjectileHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
-	APlayerCharacter* CharRef = Cast<APlayerCharacter>(GetOwner()->GetOwner());
-
-	const FRotator SpawnDecalRotation = UKismetMathLibrary::MakeRotFromX(Hit.ImpactPoint);
-	const FRotator SpawnImpactParticle = UKismetMathLibrary::MakeRotFromZ(Hit.ImpactNormal);
-	
-	StartHitReact(CharRef, Hit, Hit.Location, SpawnDecalRotation, SpawnImpactParticle);
-	
 	if(HasAuthority())
 	{
+		APlayerCharacter* CharRef = Cast<APlayerCharacter>(GetOwner()->GetOwner());
+		const FRotator SpawnImpactParticle = UKismetMathLibrary::MakeRotFromZ(Hit.ImpactNormal);
+	
+		StartHitReact(CharRef, Hit, Hit.Location, SpawnImpactParticle);
+
+		
 		if(Cast<ACharacter>(OtherActor))
 		{
 			FBodyPartData* BodyPartData = DT_BodyParts->FindRow<FBodyPartData>(Hit.BoneName, "");
