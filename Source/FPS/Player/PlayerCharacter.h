@@ -54,6 +54,24 @@ public:
 	class USkeletalMeshComponent* EquipmentMesh;
 
 	UPROPERTY(EditDefaultsOnly, Category="Components")
+	class UStaticMeshComponent* FirstWeaponHingeRoot;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Components")
+	class UStaticMeshComponent* SecondWeaponHingeRoot;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Components")
+	class UStaticMeshComponent* FirstWeaponHinge;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Components")
+	class UStaticMeshComponent* SecondWeaponHinge;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Components")
+	class UPhysicsConstraintComponent* SecondPhysicsSocket;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Components")
+	class UPhysicsConstraintComponent* FirstPhysicsSocket;
+
+	UPROPERTY(EditDefaultsOnly, Category="Components")
 	class UHealthComponent* HealthComponent;
 
 	UPROPERTY(BlueprintReadWrite, Replicated)
@@ -64,6 +82,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	class ABaseWeapon* CurrentWeapon;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UAnimMontage* SwitchWeaponMontage;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Spawning")
 	TSubclassOf<ABaseWeapon> FirstWeaponClass;
@@ -127,6 +148,9 @@ private:
 	
 public:
 	APlayerCharacter();
+
+	UFUNCTION(BlueprintCallable)
+	void SetWeapon();
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void ToggleADS(bool IsAiming);
@@ -237,4 +261,15 @@ private:
 	UFUNCTION(NetMulticast, Unreliable, BlueprintCallable)
     void MultiSpawnHoleDecal(UMaterialInstance* Material, FVector Location, FRotator Rotation);
 
+	void SwitchWeapon();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSwitchWeapon();
+	
+	UFUNCTION(NetMulticast, Reliable)
+    void MultiSwitchWeapon();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetWeapon();
+	
 };

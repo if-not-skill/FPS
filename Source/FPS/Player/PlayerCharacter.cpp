@@ -15,6 +15,7 @@
 #include "Engine/DecalActor.h"
 #include "FPS/Components/HealthComponent.h"
 #include "FPS/Framework/FPSGameModeBase.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Sound/SoundCue.h"
 
 
@@ -57,9 +58,35 @@ APlayerCharacter::APlayerCharacter()
 	EquipmentMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Equipment");
 	EquipmentMesh->SetupAttachment(GetMesh());
 	EquipmentMesh->SetMasterPoseComponent(GetMesh());
+	
+	FirstWeaponHingeRoot = CreateDefaultSubobject<UStaticMeshComponent>("FirstWeaponHingeRoot");
+	FirstWeaponHingeRoot->SetupAttachment(GetMesh(), FName("FirstWeaponSocket"));
+
+	FirstPhysicsSocket = CreateDefaultSubobject<UPhysicsConstraintComponent>("FirstPhysicsSocket");
+	FirstPhysicsSocket->SetupAttachment(GetMesh(), FName("FirstWeaponSocket"));
+	
+	FirstWeaponHinge = CreateDefaultSubobject<UStaticMeshComponent>("FirstWeaponHinge");
+	FirstWeaponHinge->SetupAttachment(GetMesh(), FName("FirstWeaponSocket"));
+	
+	SecondWeaponHingeRoot = CreateDefaultSubobject<UStaticMeshComponent>("SecondWeaponHingeRoot");
+	SecondWeaponHingeRoot->SetupAttachment(GetMesh(), FName("SecondWeaponSocket"));
+	
+	SecondPhysicsSocket = CreateDefaultSubobject<UPhysicsConstraintComponent>("SecondPhysicsSocket");
+	SecondPhysicsSocket->SetupAttachment(GetMesh(), FName("SecondWeaponSocket"));	
+	
+	SecondWeaponHinge = CreateDefaultSubobject<UStaticMeshComponent>("SecondWeaponHinge");
+	SecondWeaponHinge->SetupAttachment(GetMesh(), FName("SecondWeaponSocket"));
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
+}
+
+void APlayerCharacter::SetWeapon()
+{
+	if(IsLocallyControlled())
+	{
+		ServerSetWeapon();
+	}
 }
 
 void APlayerCharacter::StartSliding()
@@ -129,6 +156,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerCharacter::ReleasedFire);
 	
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APlayerCharacter::Reload);
+	
+	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &APlayerCharacter::SwitchWeapon);
 }
 
 void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -167,9 +196,8 @@ void APlayerCharacter::ServerSpawnWeapon_Implementation()
 	SecondWeapon = GetWorld()->SpawnActor<ABaseWeapon>(SecondWeaponClass, FTransform(), SpawnParameters);
 	SecondWeapon->AttachToComponent
     (
-        GetMesh(),
-        FAttachmentTransformRules::KeepRelativeTransform,
-        FName("SecondHandWeapon")
+        SecondWeaponHinge,
+        FAttachmentTransformRules::SnapToTargetNotIncludingScale
     );
 
 	CurrentWeapon = FirstWeapon;
@@ -511,6 +539,68 @@ void APlayerCharacter::CallDestroy()
 		
 		Destroy();
 	}
+}
+
+void APlayerCharacter::SwitchWeapon()
+{
+	if(IsLocallyControlled())
+	{
+		ServerSwitchWeapon();
+	}
+}
+
+void APlayerCharacter::ServerSetWeapon_Implementation()
+{
+	if(CurrentWeapon)
+	{
+		if(CurrentWeapon == FirstWeapon)
+		{
+			SecondWeapon->AttachToComponent
+            (
+                GetMesh(),
+                FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+                FName("RightHandSocket")
+            );
+
+			FirstWeapon->AttachToComponent
+            (
+                FirstWeaponHinge,
+                FAttachmentTransformRules::SnapToTargetNotIncludingScale
+            );
+
+			CurrentWeapon = SecondWeapon;
+		}
+		else if(CurrentWeapon == SecondWeapon)
+		{
+			FirstWeapon->AttachToComponent
+            (
+                GetMesh(),
+                FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+                FName("RightHandSocket")
+            );
+
+			SecondWeapon->AttachToComponent
+            (
+                SecondWeaponHinge,
+                FAttachmentTransformRules::SnapToTargetNotIncludingScale
+            );
+
+			CurrentWeapon = FirstWeapon;
+		}
+	}
+}
+
+void APlayerCharacter::MultiSwitchWeapon_Implementation()
+{
+	if(UAnimInstance* AnimInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		AnimInstance->Montage_Play(SwitchWeaponMontage);
+	}
+}
+
+void APlayerCharacter::ServerSwitchWeapon_Implementation()
+{
+	MultiSwitchWeapon();
 }
 
 void APlayerCharacter::MultiSpawnHoleDecal_Implementation(UMaterialInstance* Material, FVector Location, FRotator Rotation)
