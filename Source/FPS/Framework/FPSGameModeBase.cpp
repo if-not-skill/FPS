@@ -5,6 +5,7 @@
 
 
 #include "Engine/DemoNetDriver.h"
+#include "FPS/Player/PlayerCharacter.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -64,6 +65,7 @@ void AFPSGameModeBase::Spawn_Implementation(AController* Controller)
 		if(APawn* Pawn = GetWorld()->SpawnActor<APawn>(DefaultPawnClass, SpawnLocation, SpawnRotation))
 		{
 			Controller->Possess(Pawn);
+			Cast<APlayerCharacter>(Pawn)->UpdateHealthBar();
 		}
 	}
 }

@@ -12,7 +12,7 @@ class FPS_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Health")
 	float MaxHealthPoints;
 
@@ -21,6 +21,9 @@ protected:
 	
 public:	
 	UHealthComponent();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetCurrentHealthPercentage() const;
 
 protected:
 	virtual void BeginPlay() override;

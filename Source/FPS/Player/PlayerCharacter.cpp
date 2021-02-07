@@ -471,6 +471,8 @@ void APlayerCharacter::Die()
 		FTimerHandle TimerHandle_Destroy;
 		GetWorldTimerManager().SetTimer(TimerHandle_Destroy, this, &APlayerCharacter::CallDestroy, DestroyDelay);
 	}
+
+	DeleteHUD();
 }
 
 void APlayerCharacter::StartReload()

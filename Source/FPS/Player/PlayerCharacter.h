@@ -71,7 +71,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Components")
 	class UPhysicsConstraintComponent* FirstPhysicsSocket;
 
-	UPROPERTY(EditDefaultsOnly, Category="Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	class UHealthComponent* HealthComponent;
 
 	UPROPERTY(BlueprintReadWrite, Replicated)
@@ -185,6 +185,15 @@ public:
     void ServerSpawnWeapon();
 	
 	void HandleCameraShakeHit();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void UpdateHealthBar();
+	
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void CreateHUD();
+	
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void DeleteHUD();
 	
 protected:
 	virtual void BeginPlay() override;

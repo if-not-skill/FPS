@@ -12,6 +12,11 @@ UHealthComponent::UHealthComponent()
 	CurrentHealthPoints = MaxHealthPoints;
 }
 
+float UHealthComponent::GetCurrentHealthPercentage() const
+{
+	return CurrentHealthPoints / MaxHealthPoints;
+}
+
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -39,10 +44,11 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 
 	CurrentHealthPoints = FMath::Clamp(CurrentHealthPoints - Damage, 0.f, MaxHealthPoints);
 
-	if(APlayerCharacter* Char = Cast<APlayerCharacter>(GetOwner()))
+	if(APlayerCharacter* Char = Cast<APlayerCharacter>(DamagedActor))
 	{
 		Char->ShowHitVisual(DamageCauser->GetActorLocation());
 		Char->HandleCameraShakeHit();
+		Char->UpdateHealthBar();
 		
 		if(APlayerCharacter* Enemy = Cast<APlayerCharacter>(DamageCauser))
 		{
