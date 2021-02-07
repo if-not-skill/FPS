@@ -172,6 +172,22 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, CurrentWeapon);
 }
 
+
+void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if(FirstWeapon)
+	{
+		FirstWeapon->Destroy();
+	}
+		
+	if(SecondWeapon)
+	{
+		SecondWeapon->Destroy();
+	}
+}
+
 void APlayerCharacter::SpawnWeapon()
 {
 	if(HasAuthority())
@@ -380,7 +396,7 @@ void APlayerCharacter::ReleasedFire()
 
 void APlayerCharacter::Fire()
 {
-	if(CurrentWeapon && !bIsReloading)
+	if(CurrentWeapon && !bIsReloading && !bIsDie)
 	{
 		if(CurrentWeapon->CurrentAmmo > 0)
 		{
@@ -520,16 +536,6 @@ void APlayerCharacter::CallDestroy()
 {
 	if(GetLocalRole() == ROLE_Authority)
 	{
-		if(FirstWeapon)
-		{
-			FirstWeapon->Destroy();
-		}
-		
-		if(SecondWeapon)
-		{
-			SecondWeapon->Destroy();
-		}
-		
 		Destroy();
 	}
 }
