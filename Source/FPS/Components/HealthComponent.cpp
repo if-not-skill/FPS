@@ -42,6 +42,7 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 	if(APlayerCharacter* Char = Cast<APlayerCharacter>(GetOwner()))
 	{
 		Char->ShowHitVisual(DamageCauser->GetActorLocation());
+		Char->HandleCameraShakeHit();
 		
 		if(APlayerCharacter* Enemy = Cast<APlayerCharacter>(DamageCauser))
 		{

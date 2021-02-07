@@ -224,7 +224,6 @@ void APlayerCharacter::MoveForward(float Axis)
 	if(MoveForwardValue != 0.f)
 	{
 		AddMovementInput(GetActorForwardVector(), Axis);
-		HandleCameraShake();
 	}
 }
 
@@ -235,7 +234,6 @@ void APlayerCharacter::MoveRight(float Axis)
 	if(MoveRightValue != 0.f)
 	{
 		AddMovementInput(GetActorRightVector(), Axis);
-		HandleCameraShake();
 	}
 }
 
@@ -324,16 +322,9 @@ void APlayerCharacter::StartCrouch()
 	}
 }
 
-void APlayerCharacter::HandleCameraShake()
+void APlayerCharacter::HandleCameraShakeHit()
 {
-	if(bIsSprinting)
-	{
-		UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientStartCameraShake(CameraShakeSprint);	
-	}
-	else
-	{
-		UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientStartCameraShake(CameraShakeWalk);
-	}
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->ClientStartCameraShake(CameraShakeHit);
 }
 
 void APlayerCharacter::CheckSprintDirection()

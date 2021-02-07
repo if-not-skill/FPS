@@ -31,7 +31,7 @@ float ABaseWeapon::GetCalculatedDamage(EBodyPart BodyPart, float Distance)
 		Damage = Damage - (Damage * Distance * WeaponData.DamageDropMultiplier);
 	}
 	
-	return FMath::Clamp(Damage, WeaponData.DamageMin, WeaponData.Damage);
+	return FMath::Clamp(Damage, WeaponData.DamageMin, 300.f);
 }
 
 void ABaseWeapon::Fire()

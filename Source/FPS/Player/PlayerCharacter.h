@@ -132,10 +132,7 @@ public:
 	UAnimMontage* SlideMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category="CameraShake")
-	TSubclassOf<UCameraShakeBase> CameraShakeWalk;
-	
-	UPROPERTY(EditDefaultsOnly, Category="CameraShake")
-	TSubclassOf<UCameraShakeBase> CameraShakeSprint;
+	TSubclassOf<UCameraShakeBase> CameraShakeHit;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="CharacterSettings")
@@ -187,6 +184,8 @@ public:
 	UFUNCTION(Server, Reliable)
     void ServerSpawnWeapon();
 	
+	void HandleCameraShakeHit();
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
@@ -227,8 +226,6 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetControlRotationRep();
-
-	void HandleCameraShake();
 
 	void CheckSprintDirection();
 
