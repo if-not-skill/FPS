@@ -194,6 +194,9 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void DeleteHUD();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    void ShowHitMarker(bool EnemyIsAlive);
 	
 protected:
 	virtual void BeginPlay() override;

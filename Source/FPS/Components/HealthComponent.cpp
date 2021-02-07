@@ -52,7 +52,7 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 		
 		if(APlayerCharacter* Enemy = Cast<APlayerCharacter>(DamageCauser))
 		{
-			
+			Enemy->ShowHitMarker( CurrentHealthPoints == 0 ? false : true);
 		}
 		
 		if(CurrentHealthPoints == 0.f)
