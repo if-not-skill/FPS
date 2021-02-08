@@ -151,7 +151,7 @@ private:
 	FTimerHandle TimerHandle_SprintFireDelay;
 	FTimerHandle TimerHandle_UpdateRotation;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	AActor* MyKiller;
 	
 public:

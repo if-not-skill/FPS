@@ -129,7 +129,7 @@ void APlayerCharacter::RotateAtEnemy(AActor* Enemy)
 void APlayerCharacter::HighlightingEnemy(AActor* Enemy)
 {
 	ClientHighlightingEnemy(Enemy);
-
+	
 	MyKiller = Enemy;
 }
 
@@ -194,6 +194,7 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(APlayerCharacter, FirstWeapon);
 	DOREPLIFETIME(APlayerCharacter, SecondWeapon);
 	DOREPLIFETIME(APlayerCharacter, CurrentWeapon);
+	DOREPLIFETIME(APlayerCharacter, MyKiller);
 }
 
 
