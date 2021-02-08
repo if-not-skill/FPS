@@ -510,11 +510,6 @@ void APlayerCharacter::StartReload()
 	if(IsLocallyControlled())
 	{
 		bIsReloading = true;
-
-		// if(bIsSprinting)
-		// {
-		// 	StopSprint();
-		// }
 		
 		if(bIsAimingRep)
 		{
