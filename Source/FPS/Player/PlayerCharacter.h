@@ -137,6 +137,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Settings")
 	float SprintFireDelay;
 
+	UPROPERTY(EditDefaultsOnly, Category="Settings")
+	float RotateCameraInterpSpeed;
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category="CharacterSettings")
 	float WalkSpeed;
@@ -147,6 +150,9 @@ private:
 	FTimerHandle TimerHandle_Fire;
 	FTimerHandle TimerHandle_SprintFireDelay;
 	FTimerHandle TimerHandle_UpdateRotation;
+
+	UPROPERTY()
+	AActor* MyKiller;
 	
 public:
 	APlayerCharacter();
@@ -206,6 +212,8 @@ public:
 
 	UFUNCTION()
     void RotateAtEnemy(AActor* Enemy);
+
+	void HighlightingEnemy(AActor* Enemy);
 	
 protected:
 	virtual void BeginPlay() override;
@@ -296,5 +304,11 @@ private:
 
 	UFUNCTION(Client, Unreliable)
 	void ClientLookAtEnemy(AActor* Enemy);
+	
+	UFUNCTION(Client, Unreliable)
+    void ClientHighlightingEnemy(AActor* Enemy);
+
+	UFUNCTION(Client, Reliable)
+	void ClientDisableHighlightingEnemy(AActor* Enemy);
 
 };

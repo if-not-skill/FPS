@@ -34,6 +34,7 @@ APlayerCharacter::APlayerCharacter()
 	SprintSpeed = 660.f;
 
 	SprintFireDelay = 1.f;
+	RotateCameraInterpSpeed = 1.f;
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
 	HealthComponent->SetIsReplicated(true);
@@ -120,9 +121,16 @@ void APlayerCharacter::RotateAtEnemy(AActor* Enemy)
 	const FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(StartLocation, TargetLocation);
 	const FRotator CurrentRotation = Camera->GetComponentRotation();
 
-	const FRotator NewRotation = UKismetMathLibrary::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), 1.f);
+	const FRotator NewRotation = UKismetMathLibrary::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), RotateCameraInterpSpeed);
 	
 	GetWorld()->GetFirstPlayerController()->SetControlRotation(NewRotation);
+}
+
+void APlayerCharacter::HighlightingEnemy(AActor* Enemy)
+{
+	ClientHighlightingEnemy(Enemy);
+
+	MyKiller = Enemy;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -574,6 +582,8 @@ void APlayerCharacter::CallDestroy()
 {
 	if(GetLocalRole() == ROLE_Authority)
 	{
+		ClientDisableHighlightingEnemy(MyKiller);
+
 		Destroy();
 	}
 }
@@ -590,6 +600,34 @@ void APlayerCharacter::ClearSprintFireTimer()
 {
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_SprintFireDelay);
 	PressedFire();
+}
+
+void APlayerCharacter::ClientDisableHighlightingEnemy_Implementation(AActor* Enemy)
+{
+	TArray<UActorComponent*> VisualComponents;
+	Enemy->GetComponents(UPrimitiveComponent::StaticClass(), VisualComponents);
+	
+	for(auto& VisualComp : VisualComponents)
+	{
+		if(UPrimitiveComponent* Prim = Cast<UPrimitiveComponent>(VisualComp))
+		{
+			Prim->SetRenderCustomDepth(false);
+		}
+	}
+}
+
+void APlayerCharacter::ClientHighlightingEnemy_Implementation(AActor* Enemy)
+{
+	TArray<UActorComponent*> VisualComponents;
+	Enemy->GetComponents(UPrimitiveComponent::StaticClass(), VisualComponents);
+	
+	for(auto& VisualComp : VisualComponents)
+	{
+		if(UPrimitiveComponent* Prim = Cast<UPrimitiveComponent>(VisualComp))
+		{
+			Prim->SetRenderCustomDepth(true);
+		}
+	}
 }
 
 

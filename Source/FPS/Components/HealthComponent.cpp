@@ -59,6 +59,7 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 		{
 			Char->Die();
 			Char->LookAtEnemy(DamageCauser);
+			Char->HighlightingEnemy(DamageCauser);
 		}
 	}
 }
