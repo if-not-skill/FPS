@@ -15,6 +15,7 @@
 #include "Engine/DecalActor.h"
 #include "FPS/Components/HealthComponent.h"
 #include "FPS/Framework/FPSGameModeBase.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Sound/SoundCue.h"
 
@@ -111,6 +112,19 @@ void APlayerCharacter::ServerSpawnHoleDecal_Implementation(UMaterialInstance* Ma
 	MultiSpawnHoleDecal(Material, Location, Rotation);
 }
 
+void APlayerCharacter::RotateAtEnemy(AActor* Enemy)
+{
+	const FVector StartLocation = Camera->GetComponentLocation();
+	const FVector TargetLocation = Enemy->GetTransform().GetLocation();
+
+	const FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(StartLocation, TargetLocation);
+	const FRotator CurrentRotation = Camera->GetComponentRotation();
+
+	const FRotator NewRotation = UKismetMathLibrary::RInterpTo(CurrentRotation, TargetRotation, GetWorld()->GetDeltaSeconds(), 1.f);
+	
+	GetWorld()->GetFirstPlayerController()->SetControlRotation(NewRotation);
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -187,6 +201,11 @@ void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if(SecondWeapon)
 	{
 		SecondWeapon->Destroy();
+	}
+
+	if(GetWorldTimerManager().IsTimerActive(TimerHandle_UpdateRotation))
+	{
+		GetWorldTimerManager().ClearTimer(TimerHandle_UpdateRotation);
 	}
 }
 
@@ -484,11 +503,6 @@ void APlayerCharacter::Die()
 	if(GetLocalRole() == ROLE_Authority)
 	{
 		HealthComponent->DestroyComponent();
-	
-		GetCharacterMovement()->DisableMovement();
-		
-		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-		DisableInput(PlayerController);
 		
 		MultiDie();
 
@@ -503,6 +517,11 @@ void APlayerCharacter::Die()
 	}
 
 	DeleteHUD();
+}
+
+void APlayerCharacter::LookAtEnemy(AActor* Enemy)
+{
+	ClientLookAtEnemy(Enemy);
 }
 
 void APlayerCharacter::StartReload()
@@ -534,11 +553,21 @@ void APlayerCharacter::ServerHitAudio_Implementation(USoundCue* HitSound, FVecto
 
 void APlayerCharacter::MultiDie_Implementation()
 {
+	if(IsLocallyControlled())
+	{
+		GetCharacterMovement()->DisableMovement();
+		
+		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+		DisableInput(PlayerController);
+		
+		Camera->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	}
+	
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetCollisionProfileName("Ragdoll");
 	GetMesh()->SetAllBodiesSimulatePhysics(true);
 
-	GetCapsuleComponent()->DestroyComponent();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void APlayerCharacter::CallDestroy()
@@ -561,6 +590,15 @@ void APlayerCharacter::ClearSprintFireTimer()
 {
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_SprintFireDelay);
 	PressedFire();
+}
+
+
+void APlayerCharacter::ClientLookAtEnemy_Implementation(AActor* Enemy)
+{
+	FTimerDelegate TimerDel;
+ 
+	TimerDel.BindUFunction(this, FName("RotateAtEnemy"), Enemy);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle_UpdateRotation, TimerDel, 0.01f, true);
 }
 
 void APlayerCharacter::ServerSetWeapon_Implementation()

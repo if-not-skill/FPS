@@ -58,6 +58,7 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 		if(CurrentHealthPoints == 0.f)
 		{
 			Char->Die();
+			Char->LookAtEnemy(DamageCauser);
 		}
 	}
 }

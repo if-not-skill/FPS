@@ -146,6 +146,7 @@ private:
 
 	FTimerHandle TimerHandle_Fire;
 	FTimerHandle TimerHandle_SprintFireDelay;
+	FTimerHandle TimerHandle_UpdateRotation;
 	
 public:
 	APlayerCharacter();
@@ -169,6 +170,7 @@ public:
 	void ShowHitVisual(FVector HitLocation);
 	
 	void Die();
+	void LookAtEnemy(AActor* Enemy);
 
 	UFUNCTION(BlueprintCallable)
 	void StartReload();
@@ -201,6 +203,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void ShowHitMarker(bool EnemyIsAlive);
+
+	UFUNCTION()
+    void RotateAtEnemy(AActor* Enemy);
 	
 protected:
 	virtual void BeginPlay() override;
@@ -288,5 +293,8 @@ private:
 
 	UFUNCTION()
 	void ClearSprintFireTimer();
-	
+
+	UFUNCTION(Client, Unreliable)
+	void ClientLookAtEnemy(AActor* Enemy);
+
 };
