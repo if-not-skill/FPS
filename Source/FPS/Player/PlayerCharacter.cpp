@@ -32,6 +32,8 @@ APlayerCharacter::APlayerCharacter()
 	WalkSpeed = 150.f;
 	SprintSpeed = 660.f;
 
+	SprintFireDelay = 1.f;
+
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
 	HealthComponent->SetIsReplicated(true);
 
@@ -356,6 +358,18 @@ void APlayerCharacter::CheckSprintDirection()
 void APlayerCharacter::PressedFire()
 {
 	if(!CurrentWeapon) return;
+
+	if(GetWorld()->GetTimerManager().IsTimerActive(TimerHandle_SprintFireDelay))
+	{
+		return;
+	}
+	
+	if(bIsSprinting)
+	{
+		StopSprint();
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_SprintFireDelay, this, &APlayerCharacter::ClearSprintFireTimer, SprintFireDelay);
+		return;
+	}
 	
 	switch (CurrentWeapon->WeaponData.FireMode)
 	{
@@ -546,6 +560,12 @@ void APlayerCharacter::SwitchWeapon()
 	{
 		ServerSwitchWeapon();
 	}
+}
+
+void APlayerCharacter::ClearSprintFireTimer()
+{
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_SprintFireDelay);
+	PressedFire();
 }
 
 void APlayerCharacter::ServerSetWeapon_Implementation()

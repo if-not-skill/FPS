@@ -134,6 +134,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="CameraShake")
 	TSubclassOf<UCameraShakeBase> CameraShakeHit;
 
+	UPROPERTY(EditDefaultsOnly, Category="Settings")
+	float SprintFireDelay;
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category="CharacterSettings")
 	float WalkSpeed;
@@ -142,6 +145,7 @@ private:
 	float SprintSpeed;
 
 	FTimerHandle TimerHandle_Fire;
+	FTimerHandle TimerHandle_SprintFireDelay;
 	
 public:
 	APlayerCharacter();
@@ -281,5 +285,8 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetWeapon();
+
+	UFUNCTION()
+	void ClearSprintFireTimer();
 	
 };
