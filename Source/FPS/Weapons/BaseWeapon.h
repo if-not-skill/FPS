@@ -121,7 +121,7 @@ public:
 
 	float GetCalculatedDamage(EBodyPart BodyPart, float Distance);
 
-	void Fire();
+	virtual void Fire();
 	void Reload();
 	
 	UFUNCTION(Server, Reliable)
@@ -130,7 +130,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	UAnimInstance* GetCharacterAnimInstance() const;
+	
 private:
 	UFUNCTION(Server, Reliable)
 	void ServerReload();
@@ -148,6 +149,5 @@ private:
     void MulticastPlayFireAnim();
 
 	ACharacter* GetCharacterOwner() const;
-	UAnimInstance* GetCharacterAnimInstance() const;
 
 };
