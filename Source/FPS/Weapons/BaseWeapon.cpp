@@ -36,11 +36,16 @@ float ABaseWeapon::GetCalculatedDamage(EBodyPart BodyPart, float Distance)
 
 void ABaseWeapon::Fire()
 {
-	const FVector SpawnLocation = WeaponMesh->GetSocketLocation("Muzzle");
-	const FRotator SpawnRotation = WeaponMesh->GetSocketRotation("Muzzle");
+	if(CurrentAmmo != 0)
+	{
+		const FVector SpawnLocation = WeaponMesh->GetSocketLocation("Muzzle");
+		const FRotator SpawnRotation = WeaponMesh->GetSocketRotation("Muzzle");
 	
-	ServerPlayFireAnim();
-	ServerSpawnProjectile(SpawnLocation, SpawnRotation, this, GetCharacterOwner());
+		ServerPlayFireAnim();
+		ServerSpawnProjectile(SpawnLocation, SpawnRotation, this, GetCharacterOwner());
+
+		GetCharacterOwner()->GiveRecoil();
+	}
 }
 
 void ABaseWeapon::Reload()
@@ -67,14 +72,19 @@ void ABaseWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(ABaseWeapon, CurrentAmmo);
 }
 
-ACharacter* ABaseWeapon::GetCharacterOwner() const
+APlayerCharacter* ABaseWeapon::GetCharacterOwner() const
 {
-	return Cast<ACharacter>(GetOwner());
+	return Cast<APlayerCharacter>(GetOwner());
 }
 
 UAnimInstance* ABaseWeapon::GetCharacterAnimInstance() const
 {
 	return Cast<ACharacter>(GetOwner())->GetMesh()->GetAnimInstance();
+}
+
+bool ABaseWeapon::CheckIsNeedReload() const
+{
+	return CurrentAmmo == 0;
 }
 
 void ABaseWeapon::ServerEndReload_Implementation()

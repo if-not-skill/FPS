@@ -3,23 +3,36 @@
 
 #include "SniperRifleWeapon.h"
 
+
 ASniperRifleWeapon::ASniperRifleWeapon()
 {
 	bCanFire = true;
+	
+	DelayShutterDistortion = 0.3f;
 }
 
 void ASniperRifleWeapon::Fire()
 {
-	if(bCanFire)
+	if(bCanFire && !GetCharacterOwner()->bIsReloading)
 	{
 		Super::Fire();
+
+		FTimerHandle TimerHandle;
+
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &ASniperRifleWeapon::StartShutterDistortion, DelayShutterDistortion);
 	}
-	
-	StartShutterDistortion();
 }
 
 void ASniperRifleWeapon::StartShutterDistortion()
 {
+	if(APlayerCharacter* Player = GetCharacterOwner())
+	{
+		if(Player->bIsAimingRep)
+		{
+			Player->StopAiming();
+		}
+	}
+	
 	SetCanFire(false);
 	
 	ServerStartShutterDistortion();

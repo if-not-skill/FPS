@@ -214,6 +214,16 @@ public:
     void RotateAtEnemy(AActor* Enemy);
 
 	void HighlightingEnemy(AActor* Enemy);
+
+	UFUNCTION(BlueprintCallable)
+	void StartShutterDistortion();
+	
+	UFUNCTION(BlueprintCallable)
+    void EndShutterDistortion();
+
+	void StopAiming();
+	
+	void GiveRecoil();
 	
 protected:
 	virtual void BeginPlay() override;
@@ -244,7 +254,6 @@ private:
     void ServerStopSprint();
 	
 	void StartAiming();
-	void StopAiming();
 	
 	UFUNCTION(Server, Reliable)
     void ServerStartAiming();
@@ -264,7 +273,6 @@ private:
 	
 	void Fire();
 	void Reload();
-	void GiveRecoil();
 
 	void Slide();
 

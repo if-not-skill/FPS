@@ -131,6 +131,9 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	UAnimInstance* GetCharacterAnimInstance() const;
+
+	bool CheckIsNeedReload() const;
+	APlayerCharacter* GetCharacterOwner() const;
 	
 private:
 	UFUNCTION(Server, Reliable)
@@ -147,7 +150,5 @@ private:
 	
 	UFUNCTION(NetMulticast, Unreliable)
     void MulticastPlayFireAnim();
-
-	ACharacter* GetCharacterOwner() const;
 
 };

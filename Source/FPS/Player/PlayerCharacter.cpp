@@ -15,6 +15,7 @@
 #include "Engine/DecalActor.h"
 #include "FPS/Components/HealthComponent.h"
 #include "FPS/Framework/FPSGameModeBase.h"
+#include "FPS/Weapons/SniperRifleWeapon.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Sound/SoundCue.h"
@@ -131,6 +132,21 @@ void APlayerCharacter::HighlightingEnemy(AActor* Enemy)
 	ClientHighlightingEnemy(Enemy);
 	
 	MyKiller = Enemy;
+}
+
+void APlayerCharacter::StartShutterDistortion()
+{	
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LeftHandSocket"));
+}
+
+void APlayerCharacter::EndShutterDistortion()
+{
+	if(ASniperRifleWeapon* SniperRifleWeapon = Cast<ASniperRifleWeapon>(CurrentWeapon))
+	{
+		SniperRifleWeapon->SetCanFire(true);	
+	}
+	
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RightHandSocket"));
 }
 
 void APlayerCharacter::BeginPlay()
@@ -443,7 +459,6 @@ void APlayerCharacter::Fire()
 		if(CurrentWeapon->CurrentAmmo > 0)
 		{
 			CurrentWeapon->Fire();
-			GiveRecoil();
 		}
 		else
 		{

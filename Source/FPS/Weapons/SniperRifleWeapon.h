@@ -20,8 +20,12 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	UAnimMontage* CharacterShutterDistortionMontage;
-	
-private:
+
+	UPROPERTY(EditDefaultsOnly)
+	float DelayShutterDistortion;
+
+protected:
+	UPROPERTY(BlueprintReadWrite)
 	bool bCanFire;
 	
 public:
