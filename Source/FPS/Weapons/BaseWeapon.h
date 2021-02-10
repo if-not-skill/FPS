@@ -132,6 +132,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	bool bIsNeedShutterDistortion;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<class AScopeBase> WeaponDefaultScopeClass;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Replicated)
+	class AScopeBase* WeaponScope;
+
 private:
 	FTimerHandle TimerHandle_Fire;
 
@@ -173,10 +179,16 @@ public:
 	bool GetCanFire() const;
 	virtual bool GetCanAiming() const;
 
+	void SpawnScope();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSpawnScope(TSubclassOf<AScopeBase> ScopeClass);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
 	bool CheckIsNeedReload() const;
 	UAnimInstance* GetCharacterAnimInstance() const;
 	APlayerCharacter* GetCharacterOwner() const;

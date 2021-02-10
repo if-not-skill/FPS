@@ -3,6 +3,8 @@
 
 #include "BaseWeapon.h"
 
+
+#include "ScopeBase.h"
 #include "FPS/Weapons/ProjectileMaster.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/DemoNetDriver.h"
@@ -174,10 +176,36 @@ bool ABaseWeapon::GetCanAiming() const
 	return WeaponState == EWeaponState::WS_Ready || WeaponState == EWeaponState::WS_Firing;
 }
 
+void ABaseWeapon::SpawnScope()
+{
+	if(HasAuthority())
+	{
+		ServerSpawnScope(WeaponDefaultScopeClass);
+	}
+}
+
+void ABaseWeapon::ServerSpawnScope_Implementation(TSubclassOf<AScopeBase> ScopeClass)
+{
+	if(ScopeClass)
+	{
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Owner = GetOwner();
+
+		WeaponScope = GetWorld()->SpawnActor<AScopeBase>(ScopeClass, FTransform(), SpawnParameters);
+		WeaponScope->AttachToComponent
+        (
+            WeaponMesh,
+            FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+            FName("Scope")
+        );
+	}
+}
 
 void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SpawnScope();
 
 	CurrentFireMode = WeaponData.FireModes[0];
 
@@ -193,6 +221,17 @@ void ABaseWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(ABaseWeapon, CurrentAmmo);
 	DOREPLIFETIME(ABaseWeapon, WeaponState);
 	DOREPLIFETIME(ABaseWeapon, bIsNeedShutterDistortion);
+	DOREPLIFETIME(ABaseWeapon, WeaponScope);
+}
+
+void ABaseWeapon::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if(WeaponScope)
+	{
+		WeaponScope->Destroy();
+	}
 }
 
 APlayerCharacter* ABaseWeapon::GetCharacterOwner() const
