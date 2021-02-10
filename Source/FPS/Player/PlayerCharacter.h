@@ -111,9 +111,6 @@ public:
 	bool bIsAimingRep;
 
 	UPROPERTY(BlueprintReadWrite)
-	bool bIsReloading;
-
-	UPROPERTY(BlueprintReadWrite)
 	float MoveForwardValue;
 	
 	UPROPERTY(BlueprintReadWrite)
@@ -147,7 +144,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="CharacterSettings")
 	float SprintSpeed;
 
-	FTimerHandle TimerHandle_Fire;
 	FTimerHandle TimerHandle_SprintFireDelay;
 	FTimerHandle TimerHandle_UpdateRotation;
 
@@ -221,9 +217,12 @@ public:
 	UFUNCTION(BlueprintCallable)
     void EndShutterDistortion();
 
+	UFUNCTION(BlueprintCallable)
+	void EndReloadAnim();
+
 	void StopAiming();
 	
-	void GiveRecoil();
+	void GiveRecoil(float VerticalRecoil, float HorizontalRecoil);
 	
 protected:
 	virtual void BeginPlay() override;
@@ -271,7 +270,6 @@ private:
 	void PressedFire();
 	void ReleasedFire();
 	
-	void Fire();
 	void Reload();
 
 	void Slide();

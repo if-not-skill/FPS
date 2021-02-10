@@ -13,6 +13,8 @@ ABaseWeapon::ABaseWeapon()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
+
+	WeaponState = EWeaponState::WS_Ready;
 	
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	RootComponent = WeaponMesh;
@@ -40,11 +42,23 @@ void ABaseWeapon::Fire()
 	{
 		const FVector SpawnLocation = WeaponMesh->GetSocketLocation("Muzzle");
 		const FRotator SpawnRotation = WeaponMesh->GetSocketRotation("Muzzle");
-	
+
+		ServerSetWeaponState(EWeaponState::WS_Firing);
+		
 		ServerPlayFireAnim();
 		ServerSpawnProjectile(SpawnLocation, SpawnRotation, this, GetCharacterOwner());
 
-		GetCharacterOwner()->GiveRecoil();
+		GiveRecoil();
+	}
+}
+
+void ABaseWeapon::EndFireAnim()
+{
+	ServerSetWeaponState(EWeaponState::WS_Ready);
+
+	if(CurrentAmmo == 0)
+	{
+		Reload();
 	}
 }
 
@@ -56,9 +70,116 @@ void ABaseWeapon::Reload()
 	}
 }
 
+void ABaseWeapon::PressedFire()
+{
+	switch (CurrentFireMode)
+	{
+	case EFireMode::FM_Auto:
+		{
+			Fire();
+			if(!GetWorld()->GetTimerManager().IsTimerActive(TimerHandle_Fire))
+			{
+				GetWorld()->GetTimerManager().SetTimer(
+                    TimerHandle_Fire,
+                    this,
+                    &ABaseWeapon::Fire,
+                    WeaponData.FireDelay, 
+                    true);
+			}
+		}
+		break;
+	case EFireMode::FM_Burst:
+		{
+				
+		}
+		break;
+	case EFireMode::FM_Single:
+		{
+			Fire();
+		}
+		break;
+	}
+}
+
+void ABaseWeapon::ReleaseFire()
+{
+	if(GetWorld()->GetTimerManager().IsTimerActive(TimerHandle_Fire))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Fire);
+	}
+}
+
+void ABaseWeapon::StartReload()
+{
+	ServerSetWeaponState(EWeaponState::WS_Reloading);
+}
+
+void ABaseWeapon::EndReload()
+{
+	ServerEndReload();
+}
+
+
+void ABaseWeapon::StartAnimShutterDistortion()
+{
+	if(APlayerCharacter* Player = GetCharacterOwner())
+	{
+		if(Player->bIsAimingRep)
+		{
+			Player->StopAiming();
+		}
+	}
+	
+	ServerStartAnimShutterDistortion();
+}
+
+void ABaseWeapon::StartShutterDistortion()
+{
+	ServerSetWeaponState(EWeaponState::WS_ShutterDistortion);
+}
+
+void ABaseWeapon::ServerStartAnimShutterDistortion_Implementation()
+{	
+	MultiStartAnimShutterDistortion();
+}
+
+void ABaseWeapon::MultiStartAnimShutterDistortion_Implementation()
+{
+	if(UAnimInstance* CharAnimInstance = GetCharacterAnimInstance())
+	{
+		CharAnimInstance->Montage_Play(WeaponData.CharacterShutterDistortionMontage);
+	}
+	
+	if(UAnimInstance* AnimInstance = WeaponMesh->GetAnimInstance())
+	{
+		AnimInstance->Montage_Play(WeaponData.ShutterDistortionMontage);
+	}
+}
+
+void ABaseWeapon::FinishShutterDistortion()
+{
+	if(GetCharacterOwner() && GetCharacterOwner()->IsLocallyControlled())
+	{
+		ServerSetWeaponState(EWeaponState::WS_Ready);
+	}
+}
+
+bool ABaseWeapon::GetCanFire() const
+{
+	return WeaponState == EWeaponState::WS_Ready || WeaponState == EWeaponState::WS_Firing;
+}
+
+bool ABaseWeapon::GetCanAiming() const
+{
+	return WeaponState == EWeaponState::WS_Ready || WeaponState == EWeaponState::WS_Firing;
+}
+
+
 void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CurrentFireMode = WeaponData.FireModes[0];
 
 	WeaponData.FireDelay = 60.f / WeaponData.FireRate;
 	
@@ -70,11 +191,34 @@ void ABaseWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABaseWeapon, CurrentAmmo);
+	DOREPLIFETIME(ABaseWeapon, WeaponState);
+	DOREPLIFETIME(ABaseWeapon, bIsNeedShutterDistortion);
 }
 
 APlayerCharacter* ABaseWeapon::GetCharacterOwner() const
 {
 	return Cast<APlayerCharacter>(GetOwner());
+}
+
+void ABaseWeapon::GiveRecoil()
+{
+	const float VerticalRecoil = 
+        FMath::RandRange(
+            WeaponData.VerticalRecoil.X,
+            WeaponData.VerticalRecoil.Y
+            ) * -1.f;
+
+	const float HorizontalRecoil =
+        FMath::RandRange(
+            WeaponData.HorizontalRecoil.X, 
+            WeaponData.HorizontalRecoil.Y);
+
+	GetCharacterOwner()->GiveRecoil(VerticalRecoil, HorizontalRecoil);
+}
+
+void ABaseWeapon::ServerSetWeaponState_Implementation(EWeaponState NewWeaponState)
+{
+	WeaponState = NewWeaponState;
 }
 
 UAnimInstance* ABaseWeapon::GetCharacterAnimInstance() const
@@ -90,6 +234,11 @@ bool ABaseWeapon::CheckIsNeedReload() const
 void ABaseWeapon::ServerEndReload_Implementation()
 {
 	CurrentAmmo = WeaponData.AmmoInMagazine;
+
+	if(!bIsNeedShutterDistortion)
+	{
+		ServerSetWeaponState(EWeaponState::WS_Ready);
+	}
 }
 
 void ABaseWeapon::MulticastPlayFireAnim_Implementation()
@@ -142,7 +291,9 @@ void ABaseWeapon::MulticastReload_Implementation()
 void ABaseWeapon::ServerReload_Implementation()
 {
 	if(CurrentAmmo < WeaponData.AmmoInMagazine)
-	{
+	{	
+		bIsNeedShutterDistortion = CurrentAmmo == 0 ? true : false;
+
 		MulticastReload();
 	}
 }

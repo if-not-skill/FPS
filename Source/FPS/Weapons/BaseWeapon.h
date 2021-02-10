@@ -14,9 +14,9 @@
 UENUM(BlueprintType)
 enum class EWeaponType : uint8
 {
-	TW_AssaultRifle UMETA(DisplayName="AR"),
-	TW_SniperRifle UMETA(DisplayName="SR"),
-	TW_SubmachineGun UMETA(DisplayName="SG")
+	TW_AssaultRifle UMETA(DisplayName="AssaultRifle"),
+	TW_SniperRifle UMETA(DisplayName="SniperRifle"),
+	TW_SubmachineGun UMETA(DisplayName="SubmachineGun")
 };
 
 
@@ -37,7 +37,7 @@ struct FWeaponData : public FTableRowBase
 	EWeaponType WeaponType;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	EFireMode FireMode;
+	TArray<EFireMode> FireModes;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float FireRate;
@@ -82,19 +82,29 @@ struct FWeaponData : public FTableRowBase
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Montages")
 	UAnimMontage* ReloadMontage;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Montages")
-	UAnimMontage* ReloadEmptyMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Montages")
 	UAnimMontage* CharReloadMontage;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Montages")
-	UAnimMontage* CharReloadEmptyMontage;
+	UAnimMontage* ShutterDistortionMontage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Montages")
+	UAnimMontage* CharacterShutterDistortionMontage;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Ammo")
 	TSubclassOf<class AProjectileMaster> ProjectileClass;
 
+};
+
+UENUM(BlueprintType)
+enum class EWeaponState : uint8
+{
+	WS_Empty UMETA(DisplayName="Empty"),
+	WS_Reloading UMETA(DisplayName="Reloading"),
+	WS_ShutterDistortion UMETA(DisplayName="ShutterDistortion"),
+	WS_Firing UMETA(DisplayName="Firing"),
+	WS_Ready UMETA(DisplayName="Ready"),
 };
 
 
@@ -115,6 +125,17 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
 	class USkeletalMeshComponent* WeaponMesh;
+
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	EWeaponState WeaponState;
+	
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	bool bIsNeedShutterDistortion;
+
+private:
+	FTimerHandle TimerHandle_Fire;
+
+	EFireMode CurrentFireMode;
 	
 public:	
 	ABaseWeapon();
@@ -122,17 +143,42 @@ public:
 	float GetCalculatedDamage(EBodyPart BodyPart, float Distance);
 
 	virtual void Fire();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void EndFireAnim();
+	
 	void Reload();
+
+	void PressedFire();
+	void ReleaseFire();
+
+	void StartReload();
+	void EndReload();
+	
+	UFUNCTION(BlueprintCallable)
+    void StartAnimShutterDistortion();
+	
+	UFUNCTION(BlueprintCallable)
+    void StartShutterDistortion();
 	
 	UFUNCTION(Server, Reliable)
-    void ServerEndReload();
+    void ServerStartAnimShutterDistortion();
+	
+	UFUNCTION(NetMulticast, Reliable)
+    void MultiStartAnimShutterDistortion();
+
+	UFUNCTION(BlueprintCallable)
+    void FinishShutterDistortion();
+
+	bool GetCanFire() const;
+	virtual bool GetCanAiming() const;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	UAnimInstance* GetCharacterAnimInstance() const;
 
 	bool CheckIsNeedReload() const;
+	UAnimInstance* GetCharacterAnimInstance() const;
 	APlayerCharacter* GetCharacterOwner() const;
 	
 private:
@@ -150,5 +196,13 @@ private:
 	
 	UFUNCTION(NetMulticast, Unreliable)
     void MulticastPlayFireAnim();
+
+	void GiveRecoil();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetWeaponState(EWeaponState NewWeaponState);
+	
+	UFUNCTION(Server, Reliable)
+    void ServerEndReload();
 
 };

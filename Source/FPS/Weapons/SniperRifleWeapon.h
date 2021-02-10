@@ -15,38 +15,8 @@ class FPS_API ASniperRifleWeapon : public ABaseWeapon
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly)
-	UAnimMontage* ShutterDistortionMontage;
-	
-	UPROPERTY(EditDefaultsOnly)
-	UAnimMontage* CharacterShutterDistortionMontage;
-
-	UPROPERTY(EditDefaultsOnly)
-	float DelayShutterDistortion;
-
-protected:
-	UPROPERTY(BlueprintReadWrite)
-	bool bCanFire;
-	
-public:
-	ASniperRifleWeapon();
-
 	virtual void Fire() override;
-
-	UFUNCTION(BlueprintCallable)
-	void StartShutterDistortion();
-	
-	UFUNCTION(Server, Reliable)
-    void ServerStartShutterDistortion();
-	
-	UFUNCTION(NetMulticast, Reliable)
-    void MultiStartShutterDistortion();
-
-	UFUNCTION(BlueprintCallable)
-	void FinishShutterDistortion();
-
-	UFUNCTION(BlueprintCallable)
-	void SetCanFire(bool CanFire);
-	bool GetCanFire();
+	virtual void EndFireAnim() override;
+	virtual bool GetCanAiming() const override;
 	
 };

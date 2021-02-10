@@ -15,7 +15,6 @@
 #include "Engine/DecalActor.h"
 #include "FPS/Components/HealthComponent.h"
 #include "FPS/Framework/FPSGameModeBase.h"
-#include "FPS/Weapons/SniperRifleWeapon.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Sound/SoundCue.h"
@@ -135,18 +134,23 @@ void APlayerCharacter::HighlightingEnemy(AActor* Enemy)
 }
 
 void APlayerCharacter::StartShutterDistortion()
-{	
+{
+	CurrentWeapon->StartShutterDistortion();
 	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("LeftHandSocket"));
 }
 
 void APlayerCharacter::EndShutterDistortion()
 {
-	if(ASniperRifleWeapon* SniperRifleWeapon = Cast<ASniperRifleWeapon>(CurrentWeapon))
-	{
-		SniperRifleWeapon->SetCanFire(true);	
-	}
-	
+	CurrentWeapon->FinishShutterDistortion();
 	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RightHandSocket"));
+}
+
+void APlayerCharacter::EndReloadAnim()
+{
+	if(CurrentWeapon->bIsNeedShutterDistortion == true)
+	{
+		CurrentWeapon->StartAnimShutterDistortion();
+	}
 }
 
 void APlayerCharacter::BeginPlay()
@@ -338,13 +342,12 @@ void APlayerCharacter::StopSprint()
 
 void APlayerCharacter::StartAiming()
 {
-	if(!bIsReloading)
-	{
-		if(bIsSprinting) StopSprint();
+	if(!CurrentWeapon->GetCanAiming()) return;
+	
+	if(bIsSprinting) StopSprint();
 
-		ServerStartAiming();
-		ToggleADS(true);
-	}
+	ServerStartAiming();
+	ToggleADS(true);
 }
 
 void APlayerCharacter::StopAiming()
@@ -401,7 +404,7 @@ void APlayerCharacter::CheckSprintDirection()
 
 void APlayerCharacter::PressedFire()
 {
-	if(!CurrentWeapon) return;
+	if(!CurrentWeapon || !CurrentWeapon->GetCanFire()) return;
 
 	if(GetWorld()->GetTimerManager().IsTimerActive(TimerHandle_SprintFireDelay))
 	{
@@ -414,85 +417,22 @@ void APlayerCharacter::PressedFire()
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle_SprintFireDelay, this, &APlayerCharacter::ClearSprintFireTimer, SprintFireDelay);
 		return;
 	}
-	
-	switch (CurrentWeapon->WeaponData.FireMode)
-	{
-		case EFireMode::FM_Auto:
-			{
-				Fire();
-				if(!GetWorld()->GetTimerManager().IsTimerActive(TimerHandle_Fire))
-				{
-					GetWorld()->GetTimerManager().SetTimer(
-						TimerHandle_Fire,
-						this,
-						&APlayerCharacter::Fire,
-						CurrentWeapon->WeaponData.FireDelay, 
-						true);
-				}
-			}
-			break;
-		case EFireMode::FM_Burst:
-			{
-				
-			}
-			break;
-		case EFireMode::FM_Single:
-			{
-				Fire();
-			}
-			break;
-	}
+
+	CurrentWeapon->PressedFire();
 }
 
 void APlayerCharacter::ReleasedFire()
 {
-	if(GetWorld()->GetTimerManager().IsTimerActive(TimerHandle_Fire))
-	{
-		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Fire);
-	}
-}
-
-void APlayerCharacter::Fire()
-{
-	if(CurrentWeapon && !bIsReloading && !bIsDie)
-	{
-		if(CurrentWeapon->CurrentAmmo > 0)
-		{
-			CurrentWeapon->Fire();
-		}
-		else
-		{
-			if(bIsAimingRep)
-			{
-				StopAiming();
-			}
-			
-			Reload();
-		}
-	}
+	CurrentWeapon->ReleaseFire();
 }
 
 void APlayerCharacter::Reload()
 {
-	if(!bIsReloading)
-	{
-		CurrentWeapon->Reload();
-	}
+	CurrentWeapon->Reload();
 }
 
-void APlayerCharacter::GiveRecoil()
+void APlayerCharacter::GiveRecoil(float VerticalRecoil, float HorizontalRecoil)
 {
-	const float VerticalRecoil = 
-        FMath::RandRange(
-            CurrentWeapon->WeaponData.VerticalRecoil.X,
-            CurrentWeapon->WeaponData.VerticalRecoil.Y
-            ) * -1.f;
-
-	const float HorizontalRecoil =
-        FMath::RandRange(
-            CurrentWeapon->WeaponData.HorizontalRecoil.X, 
-            CurrentWeapon->WeaponData.HorizontalRecoil.Y);
-
 	LookUp(VerticalRecoil);
 	Turn(HorizontalRecoil);	
 }
@@ -552,12 +492,12 @@ void APlayerCharacter::StartReload()
 {
 	if(IsLocallyControlled())
 	{
-		bIsReloading = true;
-		
 		if(bIsAimingRep)
 		{
 			StopAiming();
 		}
+
+		CurrentWeapon->StartReload();
 	}
 }
 
@@ -565,8 +505,7 @@ void APlayerCharacter::EndReload()
 {
 	if(IsLocallyControlled())
 	{
-		bIsReloading = false;
-		CurrentWeapon->ServerEndReload();
+		CurrentWeapon->EndReload();
 	}
 }
 

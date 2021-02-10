@@ -4,69 +4,32 @@
 #include "SniperRifleWeapon.h"
 
 
-ASniperRifleWeapon::ASniperRifleWeapon()
-{
-	bCanFire = true;
-	
-	DelayShutterDistortion = 0.3f;
-}
-
 void ASniperRifleWeapon::Fire()
 {
-	if(bCanFire && !GetCharacterOwner()->bIsReloading)
+	if(WeaponState == EWeaponState::WS_Ready)
 	{
 		Super::Fire();
 
-		FTimerHandle TimerHandle;
-
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &ASniperRifleWeapon::StartShutterDistortion, DelayShutterDistortion);
-	}
-}
-
-void ASniperRifleWeapon::StartShutterDistortion()
-{
-	if(APlayerCharacter* Player = GetCharacterOwner())
-	{
-		if(Player->bIsAimingRep)
+		if(GetCharacterOwner()->bIsAimingRep)
 		{
-			Player->StopAiming();
+			GetCharacterOwner()->StopAiming();
 		}
 	}
-	
-	SetCanFire(false);
-	
-	ServerStartShutterDistortion();
 }
 
-void ASniperRifleWeapon::ServerStartShutterDistortion_Implementation()
+void ASniperRifleWeapon::EndFireAnim()
 {
-	MultiStartShutterDistortion();
-}
-
-void ASniperRifleWeapon::MultiStartShutterDistortion_Implementation()
-{
-	if(UAnimInstance* CharAnimInstance = GetCharacterAnimInstance())
+	if(CurrentAmmo == 0)
 	{
-		CharAnimInstance->Montage_Play(CharacterShutterDistortionMontage);
+		Reload();
 	}
-	
-	if(UAnimInstance* AnimInstance = WeaponMesh->GetAnimInstance())
+	else
 	{
-		AnimInstance->Montage_Play(ShutterDistortionMontage);
+		StartAnimShutterDistortion();
 	}
 }
 
-void ASniperRifleWeapon::FinishShutterDistortion()
+bool ASniperRifleWeapon::GetCanAiming() const
 {
-	SetCanFire(true);
-}
-
-void ASniperRifleWeapon::SetCanFire(bool CanFire)
-{
-	bCanFire = CanFire;
-}
-
-bool ASniperRifleWeapon::GetCanFire()
-{
-	return bCanFire;
+	return WeaponState == EWeaponState::WS_Ready;
 }
